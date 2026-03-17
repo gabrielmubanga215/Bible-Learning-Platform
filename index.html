@@ -1,0 +1,66 @@
+><!DOCTYPE html>
+<html>
+<head>
+    <title>Bible Learning Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h1>Bible Learning Platform</h1>
+    <p>Read • Watch • Learn • Test Your Knowledge</p>
+</header>
+
+<div class="container">
+
+    <!-- Books Section -->
+    <div class="books-section">
+        <h2>Bible Books</h2>
+        <input type="text" id="searchBooks" placeholder="Search for a book..." onkeyup="searchBooks()">
+        <div id="books"></div>
+    </div>
+
+    <!-- Chapters Section -->
+    <div class="chapters-section">
+        <h2 id="bookTitle"></h2>
+        <div id="chapters"></div>
+    </div>
+
+    <!-- Chapter Reader Section -->
+    <div class="reader-section">
+        <h2 id="chapterTitle"></h2>
+        <div id="bibleText"></div>
+        <div id="videoSection"></div>
+
+        <h3>Chapter Quiz</h3>
+        <div id="quizQuestion"></div>
+        <div id="quizOptions"></div>
+        <p id="quizResult"></p>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
+<!-- Header -->
+<header style="text-align:center; padding:20px; background:#f2f2f2; font-size:24px; font-weight:bold;">
+  BibleConnect by Gabriel Mubanga
+</header>
+
+<div id="books"></div>
+<h2 id="bookTitle"></h2>
+<div id="chapters"></div>
+
+<!-- Chapter Content -->
+<h3 id="chapterTitle"></h3>
+<div id="bibleText" style="margin-top:20px;"></div>
+
+<!-- Video Section -->
+<div id="videoSection" style="margin-top:20px;"></div>
+
+<!-- Footer -->
+<footer style="text-align:center; padding:10px; margin-top:30px; border-top:1px solid #ccc; font-size:14px; color:#555;">
+  &copy; 2026 Gabriel Mubanga | All rights reserved | BibleConnect
+</footer>

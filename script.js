@@ -29,7 +29,7 @@ Object.keys(bibleBooks).forEach(book => {
 
 // 1c. Google Sheet CSV link (replace with your published CSV
 //  link)
-const sheetURL ="https://docs.google.com/spreadsheets/d/1lqdKB_6M1oronxBEZnm44SmoBDJlxGIum6qv5Xsct8c/edit?usp=sharing";
+const sheetURL ="https://docs.google.com/spreadsheets/d/e/2PACX-1vTZrQs6zU6I5mFjdeYntSSfTZKd3G6Qz6pyP2iUD1K-Oat5SyZkK0vLtueHPDvsbKmk8Snl4x_TX3wB/pubhtml?widget=true&amp;headers=false"
 
 // Global quizzes object
 let chapterQuizzes = {};
@@ -79,6 +79,7 @@ function showChapters(book){
 // ------------------------
 function openChapter(book,chapter){
   saveProgress(book,chapter);
+  document.getElementById("bookTitle").innerText = book;
   document.getElementById("chapterTitle").innerText = book + " Chapter " + chapter;
 
   // Fetch Bible verses

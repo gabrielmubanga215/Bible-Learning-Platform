@@ -55,3 +55,17 @@ input[type=text]{
     border-radius:5px;
     border:1px solid #ccc;
 }
+
+/* Fade-in effect for content */
+.fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeIn 0.4s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

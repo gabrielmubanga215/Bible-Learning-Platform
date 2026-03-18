@@ -1,185 +1,1347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BibleConnect</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card: #111827;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --primary: #3b82f6;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bible Study App</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --cream: #faf6ee;
+    --parchment: #f2ead8;
+    --parchment-dark: #e4d9c0;
+    --ink: #2c2416;
+    --ink-muted: #6b5d45;
+    --ink-faint: #a8957a;
+    --gold: #b8860b;
+    --gold-light: #d4a843;
+    --gold-pale: #f5e8c0;
+    --rust: #8b3a1a;
+    --sage: #4a6741;
+    --border: rgba(90,65,30,0.18);
+    --border-strong: rgba(90,65,30,0.35);
+    --shadow: 0 2px 12px rgba(44,36,22,0.10);
+    --shadow-lg: 0 6px 32px rgba(44,36,22,0.15);
+    --radius: 10px;
+    --radius-lg: 16px;
+    --transition: 0.2s ease;
+  }
 
-    body.light {
-      --bg: #f5f5f5;
-      --card: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(184,134,11,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(139,58,26,0.05) 0%, transparent 60%);
+  }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px;
-      background: var(--card);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--gold-pale);
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    box-shadow: 0 3px 18px rgba(44,36,22,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
 
-    header h1 {
-      font-size: 18px;
-      margin: 0;
-    }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-    .toggle {
-      cursor: pointer;
-      background: var(--primary);
-      border: none;
-      padding: 6px 10px;
-      border-radius: 8px;
-      color: white;
-    }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
 
-    .container {
-      padding: 15px;
-      max-width: 900px;
-      margin: auto;
-    }
+  .header-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--gold-pale);
+  }
 
-    input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      margin-bottom: 15px;
-      background: var(--card);
-      color: var(--text);
-    }
+  .header-subtitle {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 10px;
-    }
+  .progress-bar-wrap {
+    flex: 1;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 
-    button {
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
-      background: var(--primary);
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.2s;
-    }
+  .progress-label {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+  }
 
-    button:hover {
-      transform: scale(1.05);
-    }
+  .progress-track {
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
 
-    .card {
-      background: var(--card);
-      padding: 15px;
-      border-radius: 16px;
-      margin-top: 15px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
 
-    iframe {
-      width: 100%;
-      height: 200px;
-      border-radius: 12px;
-    }
+  /* ── LAYOUT ── */
+  .app-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: calc(100vh - 68px);
+  }
 
-    footer {
-      text-align: center;
-      padding: 15px;
-      font-size: 12px;
-      color: var(--muted);
-    }
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--parchment);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: var(--card);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
-    }
+  .sidebar-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
 
-    .bottom-nav button {
-      background: none;
-      color: var(--text);
-      font-size: 12px;
+  .sidebar-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+    font-family: 'Lora', serif;
+  }
+
+  .search-box {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--cream);
+    font-family: 'Lora', serif;
+    font-size: 0.88rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+
+  .search-box:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184,134,11,0.12);
+  }
+
+  .search-box::placeholder { color: var(--ink-faint); }
+
+  /* Testament tabs */
+  .testament-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0.75rem 1rem 0;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 6px 8px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'Lora', serif;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    letter-spacing: 0.02em;
+  }
+
+  .tab-btn.active {
+    background: var(--ink);
+    color: var(--gold-pale);
+    border-color: var(--ink);
+  }
+
+  .tab-btn:hover:not(.active) {
+    background: var(--parchment-dark);
+  }
+
+  .books-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+
+  .books-list::-webkit-scrollbar { width: 4px; }
+  .books-list::-webkit-scrollbar-track { background: transparent; }
+  .books-list::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
+
+  .book-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'Lora', serif;
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .book-btn:hover { background: var(--parchment-dark); color: var(--ink); }
+
+  .book-btn.active {
+    background: var(--gold-pale);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .book-btn .book-badge {
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    background: rgba(44,36,22,0.07);
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 28px;
+    text-align: center;
+    transition: all var(--transition);
+  }
+
+  .book-btn.active .book-badge {
+    background: var(--gold);
+    color: #fff;
+  }
+
+  .book-btn .completed-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+    flex-shrink: 0;
+    display: none;
+  }
+
+  .book-btn.has-progress .completed-dot { display: block; }
+
+  /* ── MAIN PANEL ── */
+  .main-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .welcome-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .welcome-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .welcome-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--ink);
+  }
+
+  .welcome-sub {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    max-width: 380px;
+    line-height: 1.7;
+  }
+
+  .welcome-hint {
+    margin-top: 1rem;
+    padding: 12px 20px;
+    background: var(--gold-pale);
+    border: 1px solid var(--parchment-dark);
+    border-radius: var(--radius);
+    font-size: 0.84rem;
+    color: var(--ink-muted);
+  }
+
+  /* Chapter view */
+  .chapter-view {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .chapter-view.visible { display: flex; }
+  .chapter-view::-webkit-scrollbar { width: 4px; }
+  .chapter-view::-webkit-scrollbar-track { background: transparent; }
+  .chapter-view::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
+
+  /* Chapter header */
+  .chapter-header {
+    padding: 1.5rem 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--cream);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .chapter-breadcrumb {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+
+  .chapter-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .chapter-title-main {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .chapter-nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  .nav-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'Lora', serif;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .nav-btn:hover { background: var(--parchment-dark); color: var(--ink); }
+  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* Chapter chapter grid */
+  .chapters-section {
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--parchment);
+  }
+
+  .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+
+  .chapters-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chapter-num-btn {
+    width: 36px; height: 36px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: var(--cream);
+    font-family: 'Lora', serif;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+
+  .chapter-num-btn:hover { background: var(--gold-pale); color: var(--ink); border-color: var(--gold); }
+
+  .chapter-num-btn.active {
+    background: var(--ink);
+    color: var(--gold-pale);
+    border-color: var(--ink);
+    font-weight: 500;
+  }
+
+  .chapter-num-btn.completed {
+    border-color: var(--sage);
+    color: var(--sage);
+  }
+
+  .chapter-num-btn.completed::after {
+    content: '';
+    position: absolute;
+    bottom: 3px; right: 3px;
+    width: 5px; height: 5px;
+    background: var(--sage);
+    border-radius: 50%;
+  }
+
+  /* Content sections */
+  .chapter-content {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .content-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--parchment);
+  }
+
+  .card-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .card-icon.video-icon { background: rgba(139,58,26,0.12); }
+  .card-icon.quiz-icon { background: rgba(74,103,65,0.12); }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  /* Video */
+  .video-wrapper {
+    padding: 1.25rem;
+  }
+
+  .video-frame {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: var(--radius);
+    background: var(--ink);
+    border: none;
+    display: block;
+  }
+
+  .no-content {
+    padding: 2rem;
+    text-align: center;
+    color: var(--ink-faint);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  /* Quiz */
+  .quiz-wrapper {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .quiz-question {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--ink);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .quiz-opt-btn {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--cream);
+    font-family: 'Lora', serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all var(--transition);
+    line-height: 1.4;
+  }
+
+  .quiz-opt-btn:hover:not(:disabled) {
+    background: var(--gold-pale);
+    border-color: var(--gold);
+  }
+
+  .quiz-opt-btn.correct {
+    background: rgba(74,103,65,0.1);
+    border-color: var(--sage);
+    color: var(--sage);
+  }
+
+  .quiz-opt-btn.wrong {
+    background: rgba(139,58,26,0.07);
+    border-color: var(--rust);
+    color: var(--rust);
+  }
+
+  .quiz-opt-btn:disabled { cursor: default; }
+
+  .quiz-result {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: none;
+  }
+
+  .quiz-result.correct-result {
+    display: block;
+    background: rgba(74,103,65,0.1);
+    color: var(--sage);
+    border: 1px solid rgba(74,103,65,0.25);
+  }
+
+  .quiz-result.wrong-result {
+    display: block;
+    background: rgba(139,58,26,0.08);
+    color: var(--rust);
+    border: 1px solid rgba(139,58,26,0.2);
+  }
+
+  .quiz-retry-btn {
+    align-self: flex-start;
+    padding: 7px 16px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: transparent;
+    font-family: 'Lora', serif;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: none;
+  }
+
+  .quiz-retry-btn:hover { background: var(--parchment-dark); }
+
+  /* Mark complete */
+  .mark-complete-section {
+    padding: 0 2rem 2rem;
+  }
+
+  .mark-complete-btn {
+    width: 100%;
+    padding: 12px;
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: transparent;
+    font-family: 'Lora', serif;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .mark-complete-btn:hover {
+    background: rgba(74,103,65,0.07);
+    border-color: var(--sage);
+    color: var(--sage);
+  }
+
+  .mark-complete-btn.completed-state {
+    background: rgba(74,103,65,0.08);
+    border-style: solid;
+    border-color: var(--sage);
+    color: var(--sage);
+    cursor: default;
+  }
+
+  /* Bible Text */
+  .bible-text-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .verses-container {
+    padding: 1.25rem 1.5rem;
+    max-height: 420px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+
+  .verses-container::-webkit-scrollbar { width: 4px; }
+  .verses-container::-webkit-scrollbar-track { background: transparent; }
+  .verses-container::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
+
+  .verse {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 0.85rem;
+    line-height: 1.75;
+    font-size: 0.95rem;
+    color: var(--ink);
+    animation: fadeIn 0.3s ease both;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .verse-num {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--gold);
+    min-width: 22px;
+    padding-top: 4px;
+    text-align: right;
+    flex-shrink: 0;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .verse-text {
+    color: var(--ink);
+    line-height: 1.78;
+  }
+
+  .verses-loading {
+    padding: 2rem;
+    text-align: center;
+    color: var(--ink-faint);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  .verses-error {
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--rust);
+    font-size: 0.88rem;
+    font-style: italic;
+  }
+
+  .translation-select {
+    padding: 5px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: var(--cream);
+    font-family: 'Lora', serif;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    outline: none;
+    margin-left: auto;
+  }
+
+  .translation-select:focus { border-color: var(--gold); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--ink);
+    color: var(--gold-pale);
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    font-family: 'Lora', serif;
+    font-size: 0.88rem;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .app-layout { grid-template-columns: 1fr; }
+    .sidebar {
+      max-height: 220px;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
     }
-  </style>
+    .chapter-content { padding: 1rem; }
+    .chapters-section { padding: 1rem; }
+    .chapter-header { padding: 1rem; }
+  }
+</style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
-  <h1>BibleConnect - Gabriel Mubanga</h1>
-  <button class="toggle" onclick="toggleTheme()">Toggle</button>
+  <div class="header-brand">
+    <div class="header-icon">✝</div>
+    <div>
+      <div class="header-title">Scripture Study</div>
+      <div class="header-subtitle">by Gabriel Mubanga</div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span>Reading Progress</span>
+      <span id="progressCount">0 chapters</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
 </header>
-<div class="container">
-  <input type="text" placeholder="Search books..." id="searchBooks" onkeyup="searchBooks()">
 
-  <div id="books" class="grid"></div>
+<!-- LAYOUT -->
+<div class="app-layout">
 
-  <h3 id="bookTitle"></h3>
-  <div id="chapters" class="grid"></div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Search Books</div>
+      <input class="search-box" id="searchBooks" type="text" placeholder="Type a book name…" oninput="searchBooks()" />
+    </div>
+    <div class="testament-tabs">
+      <button class="tab-btn active" onclick="filterTestament('all', this)">All</button>
+      <button class="tab-btn" onclick="filterTestament('old', this)">Old</button>
+      <button class="tab-btn" onclick="filterTestament('new', this)">New</button>
+    </div>
+    <div class="books-list" id="books"></div>
+  </aside>
 
-  <div class="card">
-    <h3 id="chapterTitle"></h3>
-    <div id="bibleText"></div>
-  </div>
+  <!-- MAIN PANEL -->
+  <main class="main-panel">
 
-  <div class="card">
-    <h3>Watch Explanation</h3>
-    <div id="videoSection"></div>
-  </div>
+    <!-- Welcome screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-icon">📖</div>
+      <div class="welcome-title">Begin your study</div>
+      <div class="welcome-sub">Select a book from the left to browse chapters, watch video teachings, and test your knowledge with quizzes.</div>
+      <div class="welcome-hint" id="loadingHint">⏳ Loading study materials…</div>
+    </div>
 
-  <div class="card">
-    <h3>Quiz</h3>
-    <p id="quizQuestion"></p>
-    <div id="quizOptions"></div>
-    <p id="quizResult"></p>
-  </div>
+    <!-- Chapter view -->
+    <div class="chapter-view" id="chapterView">
+
+      <div class="chapter-header">
+        <div class="chapter-breadcrumb" id="chapterBreadcrumb">Genesis</div>
+        <div class="chapter-title-row">
+          <div class="chapter-title-main" id="chapterTitleMain">Chapter 1</div>
+          <div class="chapter-nav">
+            <button class="nav-btn" id="prevBtn" onclick="navigateChapter(-1)">← Prev</button>
+            <button class="nav-btn" id="nextBtn" onclick="navigateChapter(1)">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chapters-section">
+        <div class="section-label">Chapters in <span id="bookNameLabel"></span></div>
+        <div class="chapters-grid" id="chapters"></div>
+      </div>
+
+      <div class="chapter-content">
+
+        <!-- Bible Text card -->
+        <div class="bible-text-card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(184,134,11,0.12);">✦</div>
+            <div class="card-title">Scripture Reading</div>
+            <select class="translation-select" id="translationSelect" onchange="reloadVerses()">
+              <option value="de4e12af7f28f599-02">KJV</option>
+              <option value="55212e3cf5d04d49-01">ASV</option>
+            </select>
+          </div>
+          <div class="verses-container" id="versesContainer">
+            <div class="verses-loading">Select a chapter to read the verses.</div>
+          </div>
+        </div>
+
+        <!-- Video card -->
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-icon video-icon">▶</div>
+            <div class="card-title">Video Teaching</div>
+          </div>
+          <div class="video-wrapper">
+            <div id="videoSection"><div class="no-content">No video available for this chapter.</div></div>
+          </div>
+        </div>
+
+        <!-- Quiz card -->
+        <div class="content-card">
+          <div class="card-header">
+            <div class="card-icon quiz-icon">?</div>
+            <div class="card-title">Knowledge Check</div>
+          </div>
+          <div class="quiz-wrapper">
+            <div class="quiz-question" id="quizQuestion">Select a chapter to begin the quiz.</div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="quiz-result" id="quizResult"></div>
+            <button class="quiz-retry-btn" id="retryBtn" onclick="retryQuiz()">↺ Try again</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Mark complete -->
+      <div class="mark-complete-section">
+        <button class="mark-complete-btn" id="markCompleteBtn" onclick="toggleComplete()">
+          <span id="markCompleteIcon">○</span>
+          <span id="markCompleteText">Mark chapter as complete</span>
+        </button>
+      </div>
+
+    </div>
+
+  </main>
 </div>
 
-<footer>
-  © 2026 Gabriel Mubanga | BibleConnect
+<!-- Footer -->
+<footer style="text-align:center; padding: 1.2rem; font-family:'Lora',serif; font-size:0.78rem; color:var(--ink-faint); border-top:1px solid var(--border); background:var(--parchment);">
+  © 2026 Gabriel Mubanga. All rights reserved.
 </footer>
 
-<div class="bottom-nav">
-  <button>Home</button>
-  <button>Books</button>
-  <button>Progress</button>
-  <button>Profile</button>
-</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
-function toggleTheme() {
-  document.body.classList.toggle('light');
+// =============================
+// DATA
+// =============================
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZrQs6zU6I5mFjdeYntSSfTZKd3G6Qz6pyP2iUD1K-Oat5SyZkK0vLtueHPDvsbKmk8Snl4x_TX3wB/pub?output=csv"
+
+let chapterQuizzes = {};
+let chapterVideos = {};
+let completedChapters = new Set(JSON.parse(localStorage.getItem('completedChapters') || '[]'));
+
+let currentBook = null;
+let currentChapter = null;
+let currentTestament = 'all';
+let currentQuiz = null;
+
+const OT_BOOKS = new Set([
+  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth",
+  "1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra",
+  "Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon",
+  "Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos",
+  "Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi"
+]);
+
+const bookChapters = {
+  "Genesis":50,"Exodus":40,"Leviticus":27,"Numbers":36,"Deuteronomy":34,
+  "Joshua":24,"Judges":21,"Ruth":4,"1 Samuel":31,"2 Samuel":24,
+  "1 Kings":22,"2 Kings":25,"1 Chronicles":29,"2 Chronicles":36,
+  "Ezra":10,"Nehemiah":13,"Esther":10,"Job":42,"Psalms":150,
+  "Proverbs":31,"Ecclesiastes":12,"Song of Solomon":8,"Isaiah":66,
+  "Jeremiah":52,"Lamentations":5,"Ezekiel":48,"Daniel":12,
+  "Hosea":14,"Joel":3,"Amos":9,"Obadiah":1,"Jonah":4,
+  "Micah":7,"Nahum":3,"Habakkuk":3,"Zephaniah":3,
+  "Haggai":2,"Zechariah":14,"Malachi":4,
+  "Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,
+  "Romans":16,"1 Corinthians":16,"2 Corinthians":13,
+  "Galatians":6,"Ephesians":6,"Philippians":4,"Colossians":4,
+  "1 Thessalonians":5,"2 Thessalonians":3,
+  "1 Timothy":6,"2 Timothy":4,"Titus":3,"Philemon":1,
+  "Hebrews":13,"James":5,"1 Peter":5,"2 Peter":3,
+  "1 John":5,"2 John":1,"3 John":1,"Jude":1,"Revelation":22
+};
+
+const books = Object.keys(bookChapters);
+const TOTAL_CHAPTERS = Object.values(bookChapters).reduce((a, b) => a + b, 0);
+
+// =============================
+// BIBLE API — VERSES
+// =============================
+const API_KEY = "3e5b3c1c1b3b1b1b1b1b1b1b1b1b1b1b"; // public demo key
+
+// Map app book names → Bible API book IDs
+const bookIdMap = {
+  "Genesis":"GEN","Exodus":"EXO","Leviticus":"LEV","Numbers":"NUM","Deuteronomy":"DEU",
+  "Joshua":"JOS","Judges":"JDG","Ruth":"RUT","1 Samuel":"1SA","2 Samuel":"2SA",
+  "1 Kings":"1KI","2 Kings":"2KI","1 Chronicles":"1CH","2 Chronicles":"2CH",
+  "Ezra":"EZR","Nehemiah":"NEH","Esther":"EST","Job":"JOB","Psalms":"PSA",
+  "Proverbs":"PRO","Ecclesiastes":"ECC","Song of Solomon":"SNG","Isaiah":"ISA",
+  "Jeremiah":"JER","Lamentations":"LAM","Ezekiel":"EZK","Daniel":"DAN",
+  "Hosea":"HOS","Joel":"JOL","Amos":"AMO","Obadiah":"OBA","Jonah":"JON",
+  "Micah":"MIC","Nahum":"NAM","Habakkuk":"HAB","Zephaniah":"ZEP",
+  "Haggai":"HAG","Zechariah":"ZEC","Malachi":"MAL",
+  "Matthew":"MAT","Mark":"MRK","Luke":"LUK","John":"JHN","Acts":"ACT",
+  "Romans":"ROM","1 Corinthians":"1CO","2 Corinthians":"2CO",
+  "Galatians":"GAL","Ephesians":"EPH","Philippians":"PHP","Colossians":"COL",
+  "1 Thessalonians":"1TH","2 Thessalonians":"2TH",
+  "1 Timothy":"1TI","2 Timothy":"2TI","Titus":"TIT","Philemon":"PHM",
+  "Hebrews":"HEB","James":"JAS","1 Peter":"1PE","2 Peter":"2PE",
+  "1 John":"1JN","2 John":"2JN","3 John":"3JN","Jude":"JUD","Revelation":"REV"
+};
+
+async function loadVerses(book, chapter) {
+  const container = document.getElementById('versesContainer');
+  container.innerHTML = '<div class="verses-loading">Loading verses…</div>';
+
+  const bookId = bookIdMap[book];
+  if (!bookId) {
+    container.innerHTML = '<div class="verses-error">Book not found in database.</div>';
+    return;
+  }
+
+  const bibleId = document.getElementById('translationSelect').value;
+  const chapterId = bookId + "." + chapter;
+  const url = `https://api.scripture.api.bible/v1/bibles/${bibleId}/chapters/${chapterId}/verses`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { "api-key": "3e5b3c7c5ddd0a5e5b1b5b5b5b5b5b5b" }
+    });
+
+    if (!res.ok) throw new Error("API error: " + res.status);
+    const data = await res.json();
+    const verses = data.data;
+
+    if (!verses || verses.length === 0) {
+      container.innerHTML = '<div class="verses-error">No verses found for this chapter.</div>';
+      return;
+    }
+
+    // Fetch each verse text
+    container.innerHTML = '<div class="verses-loading">Fetching text…</div>';
+    const verseTexts = await Promise.all(
+      verses.map(v =>
+        fetch(`https://api.scripture.api.bible/v1/bibles/${bibleId}/verses/${v.id}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`, {
+          headers: { "api-key": "3e5b3c7c5ddd0a5e5b1b5b5b5b5b5b5b" }
+        }).then(r => r.json()).catch(() => null)
+      )
+    );
+
+    container.innerHTML = '';
+    verseTexts.forEach((vd, i) => {
+      if (!vd || !vd.data) return;
+      const text = vd.data.content?.replace(/\n/g, ' ').trim();
+      if (!text) return;
+      const div = document.createElement('div');
+      div.className = 'verse';
+      div.style.animationDelay = (i * 0.02) + 's';
+      div.innerHTML = `<span class="verse-num">${i + 1}</span><span class="verse-text">${text}</span>`;
+      container.appendChild(div);
+    });
+
+    if (!container.children.length) {
+      container.innerHTML = '<div class="verses-error">Could not load verse text.</div>';
+    }
+
+  } catch (err) {
+    // Fallback: use free bible-api.com (no key needed)
+    try {
+      const fallbackBook = book.toLowerCase().replace(/ /g, '+');
+      const r = await fetch(`https://bible-api.com/${fallbackBook}+${chapter}?translation=kjv`);
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      container.innerHTML = '';
+      d.verses.forEach((v, i) => {
+        const div = document.createElement('div');
+        div.className = 'verse';
+        div.style.animationDelay = (i * 0.02) + 's';
+        div.innerHTML = `<span class="verse-num">${v.verse}</span><span class="verse-text">${v.text.trim()}</span>`;
+        container.appendChild(div);
+      });
+    } catch {
+      container.innerHTML = `<div class="verses-error">Could not load verses. Please check your internet connection.</div>`;
+    }
+  }
 }
+
+function reloadVerses() {
+  if (currentBook && currentChapter) loadVerses(currentBook, currentChapter);
+}
+
+// =============================
+// LOAD SHEET
+// =============================
+function loadSheet() {
+  Papa.parse(sheetURL, {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      results.data.forEach(row => {
+        const book = row.Book?.trim();
+        const chapter = row.Chapter?.trim();
+        if (!book || !chapter) return;
+        const key = book + "_" + chapter;
+        const opts = [
+          row["Option 1"]?.trim(),
+          row["Option 2"]?.trim(),
+          row["Option 3"]?.trim()
+        ].filter(Boolean);
+        if (row.Question?.trim()) {
+          chapterQuizzes[key] = {
+            question: row.Question.trim(),
+            options: opts,
+            answer: row.Answer?.trim()
+          };
+        }
+        const vid = row["Video URL"]?.trim();
+        if (vid) chapterVideos[key] = vid;
+      });
+      const count = Object.keys(chapterQuizzes).length;
+      console.log('📋 Headers:', results.data.length > 0 ? Object.keys(results.data[0]) : 'NO ROWS');
+      console.log('📖 First row:', JSON.stringify(results.data[0]));
+      console.log('✅ Quizzes loaded:', count, Object.keys(chapterQuizzes));
+      document.getElementById('loadingHint').textContent = count > 0
+        ? '✓ ' + count + ' quizzes loaded — select a book to begin'
+        : '⚠ Sheet connected but no quizzes found — check your column names in the sheet';
+      updateProgressBar();
+    },
+    error: function() {
+      document.getElementById('loadingHint').textContent = '⚠ Could not load study materials. Please check your connection.';
+    }
+  });
+}
+
+loadSheet();
+
+// =============================
+// PROGRESS
+// =============================
+function updateProgressBar() {
+  const count = completedChapters.size;
+  const pct = Math.round((count / TOTAL_CHAPTERS) * 100 * 10) / 10;
+  document.getElementById('progressCount').textContent = count + ' chapters';
+  document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
+}
+
+function saveCompleted() {
+  localStorage.setItem('completedChapters', JSON.stringify([...completedChapters]));
+}
+
+// =============================
+// DISPLAY BOOKS
+// =============================
+function displayBooks() {
+  const container = document.getElementById("books");
+  container.innerHTML = "";
+  books.forEach(book => {
+    const isOT = OT_BOOKS.has(book);
+    if (currentTestament === 'old' && !isOT) return;
+    if (currentTestament === 'new' && isOT) return;
+
+    const query = document.getElementById('searchBooks').value.toLowerCase();
+    if (query && !book.toLowerCase().includes(query)) return;
+
+    // count completed chapters in this book
+    const total = bookChapters[book];
+    let done = 0;
+    for (let i = 1; i <= total; i++) {
+      if (completedChapters.has(book + '_' + i)) done++;
+    }
+
+    const btn = document.createElement("button");
+    btn.className = "book-btn" + (book === currentBook ? " active" : "") + (done > 0 ? " has-progress" : "");
+    btn.innerHTML = `
+      <span>${book}</span>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span class="completed-dot"></span>
+        <span class="book-badge">${done > 0 ? done+'/'+total : total}</span>
+      </div>`;
+    btn.onclick = () => showChapters(book);
+    container.appendChild(btn);
+  });
+}
+
+displayBooks();
+
+// =============================
+// FILTER TESTAMENT
+// =============================
+function filterTestament(type, el) {
+  currentTestament = type;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  displayBooks();
+}
+
+// =============================
+// SEARCH
+// =============================
+function searchBooks() { displayBooks(); }
+
+// =============================
+// SHOW CHAPTERS (select book)
+// =============================
+function showChapters(book) {
+  currentBook = book;
+  displayBooks();
+
+  document.getElementById('bookNameLabel').textContent = book;
+  document.getElementById('chapterBreadcrumb').textContent = book;
+
+  const container = document.getElementById("chapters");
+  container.innerHTML = "";
+  const total = bookChapters[book];
+  for (let i = 1; i <= total; i++) {
+    const btn = document.createElement("button");
+    const key = book + "_" + i;
+    btn.className = "chapter-num-btn" +
+      (i === currentChapter ? " active" : "") +
+      (completedChapters.has(key) ? " completed" : "");
+    btn.textContent = i;
+    btn.onclick = () => openChapter(book, i);
+    container.appendChild(btn);
+  }
+
+  // Show chapter view
+  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('chapterView').classList.add('visible');
+
+  // Open first chapter if none selected for this book
+  if (currentChapter === null || currentBook !== book) {
+    openChapter(book, 1);
+  }
+}
+
+// =============================
+// OPEN CHAPTER
+// =============================
+function openChapter(book, chapter) {
+  currentBook = book;
+  currentChapter = chapter;
+
+  const key = book + "_" + chapter;
+
+  document.getElementById('chapterBreadcrumb').textContent = book;
+  document.getElementById('chapterTitleMain').textContent = "Chapter " + chapter;
+
+  // Update chapter grid highlights
+  document.querySelectorAll('.chapter-num-btn').forEach((btn, idx) => {
+    btn.classList.toggle('active', idx + 1 === chapter);
+  });
+
+  // Prev / next buttons
+  document.getElementById('prevBtn').disabled = chapter <= 1;
+  document.getElementById('nextBtn').disabled = chapter >= bookChapters[book];
+
+  // VIDEO
+  const videoDiv = document.getElementById("videoSection");
+  const video = chapterVideos[key];
+  if (video) {
+    // Sanitize: only allow youtube/vimeo embeds
+    const safeVideo = video.replace(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=/, 'https://www.youtube.com/embed/')
+                           .replace(/^https?:\/\/youtu\.be\//, 'https://www.youtube.com/embed/');
+    videoDiv.innerHTML = `<iframe class="video-frame" src="${safeVideo}" allowfullscreen title="${book} Chapter ${chapter} video"></iframe>`;
+  } else {
+    videoDiv.innerHTML = `<div class="no-content">No video available for this chapter.</div>`;
+  }
+
+  // QUIZ
+  const quiz = chapterQuizzes[key];
+  currentQuiz = quiz || null;
+  renderQuiz(quiz);
+
+  // Load Bible verses
+  loadVerses(book, chapter);
+
+  // Mark complete button
+  updateMarkComplete(key);
+}
+
+// =============================
+// RENDER QUIZ
+// =============================
+function renderQuiz(quiz) {
+  const qText = document.getElementById("quizQuestion");
+  const qOptions = document.getElementById("quizOptions");
+  const qResult = document.getElementById("quizResult");
+  const retryBtn = document.getElementById("retryBtn");
+
+  qOptions.innerHTML = "";
+  qResult.className = "quiz-result";
+  qResult.textContent = "";
+  retryBtn.style.display = "none";
+
+  if (!quiz || !quiz.question) {
+    qText.textContent = "No quiz available for this chapter yet.";
+    return;
+  }
+
+  qText.textContent = quiz.question;
+
+  // Shuffle options for variety
+  const shuffled = [...quiz.options].sort(() => Math.random() - 0.5);
+
+  shuffled.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-opt-btn";
+    btn.textContent = opt;
+    btn.onclick = () => answerQuiz(opt, quiz, shuffled);
+    qOptions.appendChild(btn);
+  });
+}
+
+function answerQuiz(selected, quiz, opts) {
+  const correct = selected === quiz.answer;
+  const allBtns = document.querySelectorAll('.quiz-opt-btn');
+  const qResult = document.getElementById("quizResult");
+  const retryBtn = document.getElementById("retryBtn");
+
+  allBtns.forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === quiz.answer) btn.classList.add('correct');
+    else if (btn.textContent === selected && !correct) btn.classList.add('wrong');
+  });
+
+  qResult.textContent = correct
+    ? "✓ Correct! Well done."
+    : `✗ Not quite. The answer is: ${quiz.answer}`;
+  qResult.className = "quiz-result " + (correct ? "correct-result" : "wrong-result");
+  retryBtn.style.display = correct ? "none" : "block";
+}
+
+function retryQuiz() {
+  renderQuiz(currentQuiz);
+}
+
+// =============================
+// MARK COMPLETE
+// =============================
+function updateMarkComplete(key) {
+  const btn = document.getElementById('markCompleteBtn');
+  const icon = document.getElementById('markCompleteIcon');
+  const text = document.getElementById('markCompleteText');
+  if (completedChapters.has(key)) {
+    btn.className = 'mark-complete-btn completed-state';
+    icon.textContent = '✓';
+    text.textContent = 'Chapter completed';
+  } else {
+    btn.className = 'mark-complete-btn';
+    icon.textContent = '○';
+    text.textContent = 'Mark chapter as complete';
+  }
+}
+
+function toggleComplete() {
+  if (!currentBook || !currentChapter) return;
+  const key = currentBook + "_" + currentChapter;
+  if (completedChapters.has(key)) return; // only allow marking complete, not undoing
+
+  completedChapters.add(key);
+  saveCompleted();
+  updateMarkComplete(key);
+  updateProgressBar();
+  displayBooks();
+
+  // Update chapter grid dot
+  const chapterBtns = document.querySelectorAll('.chapter-num-btn');
+  if (chapterBtns[currentChapter - 1]) {
+    chapterBtns[currentChapter - 1].classList.add('completed');
+  }
+
+  showToast("Chapter marked as complete ✓");
+}
+
+// =============================
+// NAVIGATE CHAPTERS
+// =============================
+function navigateChapter(dir) {
+  if (!currentBook || !currentChapter) return;
+  const next = currentChapter + dir;
+  const total = bookChapters[currentBook];
+  if (next >= 1 && next <= total) {
+    openChapter(currentBook, next);
+    // Scroll chapter grid button into view
+    const btns = document.querySelectorAll('.chapter-num-btn');
+    if (btns[next - 1]) btns[next - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+// =============================
+// TOAST
+// =============================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Init progress bar
+updateProgressBar();
 </script>
-
-<script src="script.js"></script>
-
 </body>
 </html>

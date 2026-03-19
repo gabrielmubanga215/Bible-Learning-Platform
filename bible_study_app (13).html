@@ -6,7 +6,7 @@
 <title>Scripture Study — Gabriel Mubanga</title>
 
 <!-- PWA -->
-<link rel="manifest" href="manifest.json"/>
+<link rel="manifest" href="https://gabrielmubanga215.github.io/Bible-Learning-Platform/manifest.json"/>
 <meta name="theme-color" content="#2c2416"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -1966,7 +1966,7 @@
     Add this app to your home screen for quick access anytime
   </div>
   <div class="install-banner-actions">
-    <button class="install-btn" onclick="installApp()">Install App</button>
+    <button class="install-btn" onclick="installApp()"><span id="installBtnText">Install App</span></button>
     <button class="install-dismiss" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
   </div>
 </div>
@@ -2521,38 +2521,71 @@ updateProgressBar();
 // =============================
 // REGISTER SERVICE WORKER (PWA)
 // =============================
+// ── PWA: SERVICE WORKER ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then(() => {
-      console.log('✅ Service Worker registered');
-    }).catch(err => {
-      console.log('SW registration failed:', err);
-    });
+    // Get the correct base path for GitHub Pages subfolders
+    const swPath = '/Bible-Learning-Platform/sw.js';
+    navigator.serviceWorker.register(swPath, { scope: '/Bible-Learning-Platform/' })
+      .then(reg => {
+        console.log('✅ SW registered, scope:', reg.scope);
+      })
+      .catch(err => {
+        console.warn('SW failed:', err);
+      });
   });
 }
 
-// Install prompt
-let deferredPrompt;
+// ── PWA: INSTALL PROMPT ──
+let deferredPrompt = null;
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById('installBanner').style.display = 'flex';
+  // Show install banner after a short delay so it doesn't feel too aggressive
+  setTimeout(() => {
+    const banner = document.getElementById('installBanner');
+    if (banner) banner.style.display = 'flex';
+  }, 3000);
 });
 
 function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
-      deferredPrompt = null;
-      document.getElementById('installBanner').style.display = 'none';
-    });
+  if (!deferredPrompt) {
+    // Fallback: show manual install instructions
+    showToast('Tap the browser menu → "Add to Home Screen"');
+    return;
   }
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((choice) => {
+    deferredPrompt = null;
+    const banner = document.getElementById('installBanner');
+    if (banner) banner.style.display = 'none';
+    if (choice.outcome === 'accepted') {
+      showToast('✓ Installing app...');
+    }
+  });
 }
 
 window.addEventListener('appinstalled', () => {
-  document.getElementById('installBanner').style.display = 'none';
-  showToast('✓ App installed successfully!');
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'none';
+  deferredPrompt = null;
+  showToast('✓ Scripture Study installed successfully! 🎉');
 });
+
+// Show manual install hint on iOS (Safari doesn't support beforeinstallprompt)
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
+if (isIOS && !isInStandaloneMode) {
+  setTimeout(() => {
+    const banner = document.getElementById('installBanner');
+    const btnText = document.getElementById('installBtnText');
+    if (banner) {
+      if (btnText) btnText.textContent = 'How to Install';
+      banner.style.display = 'flex';
+    }
+  }, 3000);
+}
 
 // =============================
 // WELCOME PAGE → APP

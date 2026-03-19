@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Scripture Study — Gabriel Mubanga</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --cream: #faf6ee;
+    --parchment: #f2ead8;
+    --ink: #2c2416;
+    --ink-muted: #6b5d45;
+    --ink-faint: #a8957a;
+    --gold: #b8860b;
+    --gold-light: #d4a843;
+    --gold-pale: #f5e8c0;
+    --rust: #8b3a1a;
+    --sage: #4a6741;
+    --border: rgba(90,65,30,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Lora', Georgia, serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1.5rem;
+    position: relative;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(184,134,11,0.13) 0%, transparent 65%),
+      radial-gradient(ellipse at 20% 100%, rgba(139,58,26,0.08) 0%, transparent 55%),
+      var(--cream);
+    overflow: hidden;
+  }
+
+  /* Decorative cross background */
+  .hero::before {
+    content: '✝';
+    position: absolute;
+    font-size: 42rem;
+    color: rgba(184,134,11,0.04);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    user-select: none;
+    line-height: 1;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gold-pale);
+    border: 1px solid rgba(184,134,11,0.3);
+    border-radius: 50px;
+    padding: 7px 18px;
+    font-size: 0.82rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.75rem;
+    font-weight: 500;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 8vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.12;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    animation: fadeDown 0.7s 0.1s ease both;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--ink-muted);
+    max-width: 520px;
+    line-height: 1.75;
+    margin-bottom: 2.5rem;
+    animation: fadeDown 0.7s 0.2s ease both;
+  }
+
+  .hero-verse {
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--ink-faint);
+    margin-bottom: 2.5rem;
+    animation: fadeDown 0.7s 0.25s ease both;
+  }
+
+  .hero-verse span {
+    font-style: normal;
+    font-size: 0.82rem;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 4px;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeDown 0.7s 0.3s ease both;
+  }
+
+  .btn-primary {
+    padding: 15px 36px;
+    background: var(--ink);
+    color: var(--gold-pale);
+    border: none;
+    border-radius: 50px;
+    font-family: 'Lora', serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 20px rgba(44,36,22,0.2);
+  }
+  .btn-primary:hover {
+    background: #3d3220;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(44,36,22,0.25);
+  }
+
+  .btn-secondary {
+    padding: 15px 36px;
+    background: transparent;
+    color: var(--ink);
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    font-family: 'Lora', serif;
+    font-size: 1.05rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+  }
+  .btn-secondary:hover {
+    background: var(--parchment);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: fadeDown 1s 0.8s ease both;
+  }
+
+  .scroll-arrow {
+    width: 20px; height: 20px;
+    border-right: 2px solid var(--ink-faint);
+    border-bottom: 2px solid var(--ink-faint);
+    transform: rotate(45deg);
+    animation: bounce 1.5s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(5px); }
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    background: var(--ink);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 0.75rem 2.5rem;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── FEATURES ── */
+  .features {
+    padding: 5rem 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    text-align: center;
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 600;
+    text-align: center;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    line-height: 1.25;
+  }
+
+  .section-sub {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--ink-muted);
+    max-width: 480px;
+    margin: 0 auto 3.5rem;
+    line-height: 1.7;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem 1.75rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(44,36,22,0.1);
+  }
+
+  .feature-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .feature-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.6rem;
+  }
+
+  .feature-desc {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    line-height: 1.7;
+  }
+
+  /* ── VERSE SECTION ── */
+  .verse-section {
+    background: var(--ink);
+    padding: 5rem 2rem;
+    text-align: center;
+  }
+
+  .big-verse {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--gold-pale);
+    max-width: 780px;
+    margin: 0 auto 1.25rem;
+    line-height: 1.5;
+  }
+
+  .verse-ref {
+    font-size: 0.88rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    padding: 5rem 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 3rem;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    transition: box-shadow 0.2s;
+  }
+
+  .step:hover { box-shadow: 0 4px 20px rgba(44,36,22,0.08); }
+
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 36px;
+  }
+
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    line-height: 1.65;
+  }
+
+  /* ── CTA ── */
+  .cta-section {
+    padding: 5rem 1.5rem;
+    text-align: center;
+    background: var(--parchment);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cta-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .cta-sub {
+    font-size: 1.05rem;
+    color: var(--ink-muted);
+    margin-bottom: 2.5rem;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: var(--ink);
+    padding: 2rem;
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+
+  .footer-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--gold-pale);
+    margin-bottom: 0.4rem;
+  }
+
+  .footer-copy {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    margin-top: 0.5rem;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 640px) {
+    .hero { padding: 4rem 1.25rem 6rem; }
+    .hero-btns { flex-direction: column; align-items: center; }
+    .btn-primary, .btn-secondary { width: 100%; max-width: 300px; justify-content: center; }
+    .stat-item { padding: 0.75rem 1.25rem; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .stat-item:last-child { border-bottom: none; }
+    .stats-bar { flex-direction: column; align-items: center; }
+    .features { padding: 3.5rem 1.25rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .step { flex-direction: column; gap: 0.75rem; }
+    .verse-section { padding: 3.5rem 1.5rem; }
+    .how-section { padding: 3.5rem 1.25rem; }
+    .cta-section { padding: 3.5rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">✝ Scripture Study by Gabriel Mubanga</div>
+
+  <h1 class="hero-title">
+    Grow Deeper in<br><em>God's Word</em>
+  </h1>
+
+  <p class="hero-sub">
+    A complete Bible study platform with verse reading, video teachings, knowledge quizzes and reading progress tracking — all in one place.
+  </p>
+
+  <div class="hero-verse">
+    "Your word is a lamp to my feet and a light to my path."
+    <span>Psalm 119:105</span>
+  </div>
+
+  <div class="hero-btns">
+    <a class="btn-primary" href="bible_study_app.html">📖 Start Studying</a>
+    <a class="btn-secondary" href="#features">Learn More ↓</a>
+  </div>
+
+  <div class="scroll-hint">
+    Scroll
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-num">66</div>
+    <div class="stat-label">Books of the Bible</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">1,189</div>
+    <div class="stat-label">Chapters</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">2</div>
+    <div class="stat-label">Translations</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">Free</div>
+    <div class="stat-label">Always</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-tag">What's inside</div>
+  <h2 class="section-title">Everything you need to study the Bible</h2>
+  <p class="section-sub">From Genesis to Revelation — read, watch, learn and track your journey.</p>
+
+  <div class="features-grid">
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(184,134,11,0.12);">📖</div>
+      <div class="feature-title">Full Scripture Reading</div>
+      <div class="feature-desc">Read any chapter from all 66 books of the Bible in KJV or ASV translation. Verses load instantly with beautiful formatting.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(139,58,26,0.1);">▶</div>
+      <div class="feature-title">Video Teachings</div>
+      <div class="feature-desc">Watch curated video teachings for each chapter. Perfect for visual learners who want deeper understanding of the scriptures.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(74,103,65,0.12);">?</div>
+      <div class="feature-title">Knowledge Quizzes</div>
+      <div class="feature-desc">Test your understanding with chapter quizzes after reading. Answers are checked instantly and you can retry if you get it wrong.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(44,36,22,0.07);">📊</div>
+      <div class="feature-title">Reading Progress</div>
+      <div class="feature-desc">Track your journey through the Bible. Mark chapters as complete and watch your progress bar grow across all 1,189 chapters.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(184,134,11,0.12);">🔍</div>
+      <div class="feature-title">Search & Filter</div>
+      <div class="feature-desc">Quickly find any book using the search bar. Filter by Old or New Testament to focus your study sessions.</div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon" style="background:rgba(139,58,26,0.1);">🌟</div>
+      <div class="feature-title">Safe Space</div>
+      <div class="feature-desc">A community space coming soon — share encouragement, prayers and motivational words with fellow Bible students.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- VERSE SECTION -->
+<section class="verse-section">
+  <p class="big-verse">"Study to show yourself approved to God, a worker who does not need to be ashamed, rightly dividing the word of truth."</p>
+  <div class="verse-ref">2 Timothy 2:15</div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-tag">How it works</div>
+  <h2 class="section-title">Start studying in seconds</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Choose a Book</div>
+        <div class="step-desc">Select any of the 66 books from the sidebar. Filter by Old or New Testament or search by name.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Pick a Chapter</div>
+        <div class="step-desc">Click any chapter number to open it. The verses, video and quiz all load automatically.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Read, Watch & Learn</div>
+        <div class="step-desc">Read the scripture, watch the video teaching, then take the quiz to test your understanding.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Mark Complete & Track Progress</div>
+        <div class="step-desc">Mark each chapter as complete and watch your overall Bible reading progress grow over time.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2 class="cta-title">Ready to begin<br>your journey?</h2>
+  <p class="cta-sub">Join thousands of believers deepening their faith through daily Bible study. It's completely free.</p>
+  <a class="btn-primary" href="bible_study_app.html" style="display:inline-flex;">📖 Open Scripture Study</a>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-brand">Scripture Study</div>
+  <div>By Gabriel Mubanga — Built with faith and purpose</div>
+  <div class="footer-copy">© 2026 Gabriel Mubanga. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

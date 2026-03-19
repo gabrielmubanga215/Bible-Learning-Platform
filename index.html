@@ -1,2479 +1,1764 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Scripture Study — Gabriel Mubanga</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#1a1208"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Scripture Study"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<meta name="description" content="Bible Study App by Gabriel Mubanga — Read scripture, watch teachings and take quizzes."/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --cream: #faf6ee;
-    --parchment: #f2ead8;
-    --parchment-dark: #e4d9c0;
-    --ink: #2c2416;
-    --ink-muted: #6b5d45;
-    --ink-faint: #a8957a;
-    --gold: #b8860b;
-    --gold-light: #d4a843;
-    --gold-pale: #f5e8c0;
-    --rust: #8b3a1a;
-    --sage: #4a6741;
-    --border: rgba(90,65,30,0.18);
-    --border-strong: rgba(90,65,30,0.35);
-    --shadow: 0 2px 12px rgba(44,36,22,0.10);
-    --shadow-lg: 0 6px 32px rgba(44,36,22,0.15);
-    --radius: 10px;
-    --radius-lg: 16px;
-    --transition: 0.2s ease;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Lora', Georgia, serif;
-    background: var(--cream);
-    color: var(--ink);
-    min-height: 100vh;
-    background-image:
-      radial-gradient(ellipse at 20% 10%, rgba(184,134,11,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 90%, rgba(139,58,26,0.05) 0%, transparent 60%);
-  }
-
-  /* ── HEADER ── */
-  header {
-    background: var(--ink);
-    color: var(--gold-pale);
-    padding: 1.2rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-    box-shadow: 0 3px 18px rgba(44,36,22,0.3);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .header-icon {
-    width: 36px; height: 36px;
-    background: var(--gold);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-
-  .header-title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.6rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--gold-pale);
-  }
-
-  .header-subtitle {
-    font-size: 0.82rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-top: 1px;
-  }
-
-  .progress-bar-wrap {
-    flex: 1;
-    max-width: 280px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .progress-label {
-    font-size: 0.82rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .progress-track {
-    height: 4px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--gold-light));
-    border-radius: 2px;
-    transition: width 0.5s ease;
-  }
-
-  /* ── LAYOUT ── */
-  .app-layout {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    min-height: calc(100vh - 68px);
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    background: var(--parchment);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .sidebar-section {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-label {
-    font-size: 0.8rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 8px;
-    font-family: 'Lora', serif;
-  }
-
-  .search-box {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--cream);
-    font-family: 'Lora', serif;
-    font-size: 1rem;
-    color: var(--ink);
-    outline: none;
-    transition: border-color var(--transition), box-shadow var(--transition);
-  }
-
-  .search-box:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(184,134,11,0.12);
-  }
-
-  .search-box::placeholder { color: var(--ink-faint); }
-
-  /* Testament tabs */
-  .testament-tabs {
-    display: flex;
-    gap: 4px;
-    padding: 0.75rem 1rem 0;
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 6px 8px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    background: transparent;
-    font-family: 'Lora', serif;
-    font-size: 0.92rem;
-    color: var(--ink-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-    letter-spacing: 0.02em;
-  }
-
-  .tab-btn.active {
-    background: var(--ink);
-    color: var(--gold-pale);
-    border-color: var(--ink);
-  }
-
-  .tab-btn:hover:not(.active) {
-    background: var(--parchment-dark);
-  }
-
-  .books-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.5rem;
-  }
-
-  .books-list::-webkit-scrollbar { width: 4px; }
-  .books-list::-webkit-scrollbar-track { background: transparent; }
-  .books-list::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
-
-  .book-btn {
-    width: 100%;
-    text-align: left;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    font-family: 'Lora', serif;
-    font-size: 1rem;
-    color: var(--ink-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .book-btn:hover { background: var(--parchment-dark); color: var(--ink); }
-
-  .book-btn.active {
-    background: var(--gold-pale);
-    color: var(--ink);
-    font-weight: 500;
-  }
-
-  .book-btn .book-badge {
-    font-size: 0.78rem;
-    color: var(--ink-faint);
-    background: rgba(44,36,22,0.07);
-    padding: 1px 6px;
-    border-radius: 10px;
-    min-width: 28px;
-    text-align: center;
-    transition: all var(--transition);
-  }
-
-  .book-btn.active .book-badge {
-    background: var(--gold);
-    color: #fff;
-  }
-
-  .book-btn .completed-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--sage);
-    flex-shrink: 0;
-    display: none;
-  }
-
-  .book-btn.has-progress .completed-dot { display: block; }
-
-  /* ── MAIN PANEL ── */
-  .main-panel {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .welcome-screen {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 2rem;
-    text-align: center;
-    gap: 1rem;
-  }
-
-  .welcome-icon {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .welcome-title {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 2rem;
-    font-weight: 400;
-    font-style: italic;
-    color: var(--ink);
-  }
-
-  .welcome-sub {
-    font-size: 1.05rem;
-    color: var(--ink-muted);
-    max-width: 380px;
-    line-height: 1.7;
-  }
-
-  .welcome-hint {
-    margin-top: 1rem;
-    padding: 12px 20px;
-    background: var(--gold-pale);
-    border: 1px solid var(--parchment-dark);
-    border-radius: var(--radius);
-    font-size: 0.95rem;
-    color: var(--ink-muted);
-  }
-
-  /* Chapter view */
-  .chapter-view {
-    flex: 1;
-    display: none;
-    flex-direction: column;
-    overflow-y: auto;
-  }
-
-  .chapter-view.visible { display: flex; }
-  .chapter-view::-webkit-scrollbar { width: 4px; }
-  .chapter-view::-webkit-scrollbar-track { background: transparent; }
-  .chapter-view::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
-
-  /* Chapter header */
-  .chapter-header {
-    padding: 1.5rem 2rem 1rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--cream);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  .chapter-breadcrumb {
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 4px;
-  }
-
-  .chapter-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .chapter-title-main {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.9rem;
-    font-weight: 600;
-    color: var(--ink);
-  }
-
-  .chapter-nav {
-    display: flex;
-    gap: 8px;
-  }
-
-  .nav-btn {
-    padding: 6px 14px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    background: transparent;
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    color: var(--ink-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-  }
-
-  .nav-btn:hover { background: var(--parchment-dark); color: var(--ink); }
-  .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-  /* Chapter chapter grid */
-  .chapters-section {
-    padding: 1.25rem 2rem;
-    border-bottom: 1px solid var(--border);
-    background: var(--parchment);
-  }
-
-  .section-label {
-    font-size: 0.82rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 10px;
-  }
-
-  .chapters-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .chapter-num-btn {
-    width: 42px; height: 42px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    background: var(--cream);
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    color: var(--ink-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-  }
-
-  .chapter-num-btn:hover { background: var(--gold-pale); color: var(--ink); border-color: var(--gold); }
-
-  .chapter-num-btn.active {
-    background: var(--ink);
-    color: var(--gold-pale);
-    border-color: var(--ink);
-    font-weight: 500;
-  }
-
-  .chapter-num-btn.completed {
-    border-color: var(--sage);
-    color: var(--sage);
-  }
-
-  .chapter-num-btn.completed::after {
-    content: '';
-    position: absolute;
-    bottom: 3px; right: 3px;
-    width: 5px; height: 5px;
-    background: var(--sage);
-    border-radius: 50%;
-  }
-
-  /* Content sections */
-  .chapter-content {
-    padding: 1.5rem 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .content-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-  }
-
-  .card-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--parchment);
-  }
-
-  .card-icon {
-    width: 28px; height: 28px;
-    border-radius: 7px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
-
-  .card-icon.video-icon { background: rgba(139,58,26,0.12); }
-  .card-icon.quiz-icon { background: rgba(74,103,65,0.12); }
-
-  .card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--ink);
-  }
-
-  /* Video */
-  .video-wrapper {
-    padding: 1.25rem;
-  }
-
-  .video-frame {
-    width: 100%;
-    aspect-ratio: 16/9;
-    border-radius: var(--radius);
-    background: var(--ink);
-    border: none;
-    display: block;
-  }
-
-  .no-content {
-    padding: 2rem;
-    text-align: center;
-    color: var(--ink-faint);
-    font-style: italic;
-    font-size: 1rem;
-  }
-
-  /* Quiz */
-  .quiz-wrapper {
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .quiz-question {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.15rem;
-    line-height: 1.7;
-    color: var(--ink);
-    padding-bottom: 0.5rem;
-    border-bottom: 1px dashed var(--border);
-  }
-
-  .quiz-options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .quiz-opt-btn {
-    width: 100%;
-    text-align: left;
-    padding: 12px 16px;
-    border: 1.5px solid var(--border-strong);
-    border-radius: var(--radius);
-    background: var(--cream);
-    font-family: 'Lora', serif;
-    font-size: 1rem;
-    color: var(--ink);
-    cursor: pointer;
-    transition: all var(--transition);
-    line-height: 1.4;
-  }
-
-  .quiz-opt-btn:hover:not(:disabled) {
-    background: var(--gold-pale);
-    border-color: var(--gold);
-  }
-
-  .quiz-opt-btn.correct {
-    background: rgba(74,103,65,0.1);
-    border-color: var(--sage);
-    color: var(--sage);
-  }
-
-  .quiz-opt-btn.wrong {
-    background: rgba(139,58,26,0.07);
-    border-color: var(--rust);
-    color: var(--rust);
-  }
-
-  .quiz-opt-btn:disabled { cursor: default; }
-
-  .quiz-result {
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    font-size: 1rem;
-    font-weight: 500;
-    display: none;
-  }
-
-  .quiz-result.correct-result {
-    display: block;
-    background: rgba(74,103,65,0.1);
-    color: var(--sage);
-    border: 1px solid rgba(74,103,65,0.25);
-  }
-
-  .quiz-result.wrong-result {
-    display: block;
-    background: rgba(139,58,26,0.08);
-    color: var(--rust);
-    border: 1px solid rgba(139,58,26,0.2);
-  }
-
-  .quiz-retry-btn {
-    align-self: flex-start;
-    padding: 7px 16px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    background: transparent;
-    font-family: 'Lora', serif;
-    font-size: 0.82rem;
-    color: var(--ink-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-    display: none;
-  }
-
-  .quiz-retry-btn:hover { background: var(--parchment-dark); }
-
-  /* Mark complete */
-  .mark-complete-section {
-    padding: 0 2rem 2rem;
-  }
-
-  .mark-complete-btn {
-    width: 100%;
-    padding: 12px;
-    border: 2px dashed var(--border-strong);
-    border-radius: var(--radius-lg);
-    background: transparent;
-    font-family: 'Lora', serif;
-    font-size: 1rem;
-    color: var(--ink-muted);
-    cursor: pointer;
-    transition: all var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .mark-complete-btn:hover {
-    background: rgba(74,103,65,0.07);
-    border-color: var(--sage);
-    color: var(--sage);
-  }
-
-  .mark-complete-btn.completed-state {
-    background: rgba(74,103,65,0.08);
-    border-style: solid;
-    border-color: var(--sage);
-    color: var(--sage);
-    cursor: default;
-  }
-
-  /* Bible Text */
-  .bible-text-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-  }
-
-  .verses-container {
-    padding: 1.25rem 1.5rem;
-    max-height: 420px;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-  }
-
-  .verses-container::-webkit-scrollbar { width: 4px; }
-  .verses-container::-webkit-scrollbar-track { background: transparent; }
-  .verses-container::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
-
-  .verse {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 0.85rem;
-    line-height: 1.75;
-    font-size: 1.05rem;
-    color: var(--ink);
-    animation: fadeIn 0.3s ease both;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .verse-num {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--gold);
-    min-width: 22px;
-    padding-top: 4px;
-    text-align: right;
-    flex-shrink: 0;
-    font-family: 'Playfair Display', serif;
-  }
-
-  .verse-text {
-    color: var(--ink);
-    line-height: 1.78;
-  }
-
-  .verses-loading {
-    padding: 2rem;
-    text-align: center;
-    color: var(--ink-faint);
-    font-style: italic;
-    font-size: 0.9rem;
-  }
-
-  .verses-error {
-    padding: 1.5rem;
-    text-align: center;
-    color: var(--rust);
-    font-size: 0.88rem;
-    font-style: italic;
-  }
-
-  .translation-select {
-    padding: 5px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    background: var(--cream);
-    font-family: 'Lora', serif;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
-    cursor: pointer;
-    outline: none;
-    margin-left: auto;
-  }
-
-  .translation-select:focus { border-color: var(--gold); }
-
-  /* Safe Space nav button */
-  .safe-space-nav-btn {
-    padding: 9px 20px;
-    border: 1.5px solid var(--gold);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--gold-pale);
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
-  }
-  .safe-space-nav-btn:hover { background: rgba(184,134,11,0.15); }
-  .safe-space-nav-btn.active { background: var(--gold); color: var(--ink); }
-
-  /* Safe Space overlay */
-  .safe-space-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(44,36,22,0.55);
-    align-items: flex-end;
-    justify-content: center;
-  }
-  .safe-space-overlay.open { display: flex; }
-
-  .safe-space-panel {
-    background: var(--cream);
-    width: 100%;
-    max-width: 620px;
-    max-height: 88vh;
-    border-radius: 22px 22px 0 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 -8px 40px rgba(44,36,22,0.25);
-    animation: slideUp 0.32s cubic-bezier(0.34,1.2,0.64,1) both;
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-  }
-
-  .ss-header {
-    background: var(--ink);
-    padding: 1.1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  }
-
-  .ss-header-left { display: flex; flex-direction: column; gap: 2px; }
-
-  .ss-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--gold-pale);
-  }
-
-  .ss-subtitle {
-    font-size: 0.78rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.06em;
-  }
-
-  .ss-close {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: transparent;
-    color: var(--gold-pale);
-    font-size: 1.1rem;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
-  }
-  .ss-close:hover { background: rgba(255,255,255,0.1); }
-
-  .ss-verse-banner {
-    background: var(--gold-pale);
-    border-bottom: 1px solid var(--parchment-dark);
-    padding: 10px 1.5rem;
-    font-style: italic;
-    font-size: 0.88rem;
-    color: var(--ink-muted);
-    line-height: 1.55;
-    flex-shrink: 0;
-  }
-
-  .ss-verse-banner strong {
-    font-style: normal;
-    color: var(--gold);
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 2px;
-  }
-
-  .ss-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .ss-messages::-webkit-scrollbar { width: 4px; }
-  .ss-messages::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
-
-  .ss-msg {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    animation: fadeIn 0.3s ease both;
-  }
-
-  .ss-msg-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .ss-msg-author {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--gold);
-    letter-spacing: 0.04em;
-  }
-
-  .ss-msg-time {
-    font-size: 0.72rem;
-    color: var(--ink-faint);
-  }
-
-  .ss-msg-text {
-    font-size: 0.97rem;
-    color: var(--ink);
-    line-height: 1.65;
-  }
-
-  .ss-msg-verse {
-    font-size: 0.8rem;
-    font-style: italic;
-    color: var(--ink-faint);
-    padding-top: 6px;
-    border-top: 1px dashed var(--border);
-    line-height: 1.5;
-  }
-
-  .ss-empty {
-    text-align: center;
-    padding: 2.5rem 1rem;
-    color: var(--ink-faint);
-    font-style: italic;
-    font-size: 0.95rem;
-    line-height: 1.7;
-  }
-
-  .ss-compose {
-    border-top: 1px solid var(--border);
-    padding: 1rem 1.25rem;
-    background: var(--parchment);
-    flex-shrink: 0;
-  }
-
-  .ss-compose textarea {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1px solid var(--border-strong);
-    border-radius: 12px;
-    background: var(--cream);
-    font-family: 'Lora', serif;
-    font-size: 0.97rem;
-    color: var(--ink);
-    resize: none;
-    outline: none;
-    min-height: 70px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    line-height: 1.6;
-  }
-
-  .ss-compose textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(184,134,11,0.1);
-  }
-
-  .ss-compose textarea::placeholder { color: var(--ink-faint); }
-
-  .ss-compose-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .ss-anon-note {
-    font-size: 0.78rem;
-    color: var(--ink-faint);
-    font-style: italic;
-  }
-
-  .ss-send-btn {
-    padding: 9px 22px;
-    background: var(--ink);
-    color: var(--gold-pale);
-    border: none;
-    border-radius: 10px;
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .ss-send-btn:hover { background: #3d3220; }
-
-  @media (max-width: 700px) {
-    .safe-space-nav-btn { font-size: 0.88rem; padding: 8px 14px; }
-    .ss-title { font-size: 1.1rem; }
-    .ss-msg-text { font-size: 1rem; }
-    .ss-compose textarea { font-size: 1rem; }
-  }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    background: var(--ink);
-    color: var(--gold-pale);
-    padding: 10px 18px;
-    border-radius: var(--radius);
-    font-family: 'Lora', serif;
-    font-size: 1rem;
-    box-shadow: var(--shadow-lg);
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 999;
-    pointer-events: none;
-  }
-
-  .toast.show {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  /* ── MOBILE ── */
-  @media (max-width: 700px) {
-    .app-layout { grid-template-columns: 1fr; }
-
-    .sidebar {
-      max-height: 280px;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
-    }
-
-    /* Header */
-    header { padding: 1rem 1.25rem; gap: 0.75rem; }
-    .header-icon { width: 40px; height: 40px; font-size: 20px; }
-    .header-title { font-size: 1.35rem; }
-    .header-subtitle { font-size: 0.82rem; letter-spacing: 0.08em; }
-    .progress-bar-wrap { max-width: 100%; width: 100%; }
-    .progress-label { font-size: 0.82rem; }
-    .progress-track { height: 6px; }
-
-    /* Sidebar */
-    .sidebar-section { padding: 0.85rem 1rem; }
-    .sidebar-label { font-size: 0.82rem; margin-bottom: 6px; }
-    .search-box { font-size: 1.05rem; padding: 11px 14px; border-radius: 10px; }
-    .testament-tabs { padding: 0.6rem 0.75rem 0; gap: 6px; }
-    .tab-btn { font-size: 0.95rem; padding: 9px 12px; border-radius: 10px; }
-    .books-list { padding: 0.4rem 0.5rem; }
-    .book-btn { font-size: 1.05rem; padding: 11px 14px; border-radius: 10px; }
-    .book-badge { font-size: 0.82rem; padding: 2px 8px; }
-
-    /* Chapter header */
-    .chapter-header { padding: 1rem 1.25rem 0.85rem; }
-    .chapter-breadcrumb { font-size: 0.88rem; margin-bottom: 5px; }
-    .chapter-title-main { font-size: 1.65rem; }
-    .chapter-nav { gap: 8px; }
-    .nav-btn { font-size: 0.95rem; padding: 10px 18px; border-radius: 10px; }
-
-    /* Chapter grid */
-    .chapters-section { padding: 1rem 1.25rem; }
-    .section-label { font-size: 0.85rem; margin-bottom: 10px; }
-    .chapters-grid { gap: 7px; }
-    .chapter-num-btn { width: 46px; height: 46px; font-size: 1rem; border-radius: 10px; }
-
-    /* Content */
-    .chapter-content { padding: 1rem 1.25rem; gap: 1.25rem; }
-    .card-header { padding: 14px 18px; }
-    .card-icon { width: 34px; height: 34px; font-size: 17px; }
-    .card-title { font-size: 1.15rem; }
-
-    /* Verses */
-    .verses-container { padding: 1.1rem 1.25rem; max-height: 400px; }
-    .verse { font-size: 1.1rem; gap: 12px; margin-bottom: 1.1rem; line-height: 1.85; }
-    .verse-num { font-size: 0.88rem; min-width: 26px; padding-top: 3px; }
-    .verse-text { font-size: 1.1rem; line-height: 1.88; }
-    .translation-select { font-size: 0.92rem; padding: 8px 12px; }
-
-    /* Quiz */
-    .quiz-wrapper { padding: 1.1rem 1.25rem; gap: 1.1rem; }
-    .quiz-question { font-size: 1.18rem; line-height: 1.7; padding-bottom: 0.75rem; }
-    .quiz-options { gap: 10px; }
-    .quiz-opt-btn { font-size: 1.05rem; padding: 15px 18px; border-radius: 12px; }
-    .quiz-result { font-size: 1.05rem; padding: 14px 18px; }
-    .quiz-retry-btn { font-size: 0.95rem; padding: 10px 20px; }
-
-    /* Video */
-    .video-wrapper { padding: 1rem 1.25rem; }
-    .no-content { font-size: 1rem; padding: 1.5rem; }
-
-    /* Mark complete */
-    .mark-complete-section { padding: 0 1.25rem 2rem; }
-    .mark-complete-btn { font-size: 1.05rem; padding: 16px; border-radius: 14px; }
-
-    /* Welcome screen */
-    .welcome-screen { padding: 2rem 1.5rem; gap: 0.85rem; }
-    .welcome-icon { font-size: 3.5rem; }
-    .welcome-title { font-size: 1.75rem; }
-    .welcome-sub { font-size: 1.05rem; line-height: 1.75; }
-    .welcome-hint { font-size: 0.95rem; padding: 12px 18px; }
-
-    /* Safe Space nav button */
-  .safe-space-nav-btn {
-    padding: 9px 20px;
-    border: 1.5px solid var(--gold);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--gold-pale);
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    letter-spacing: 0.02em;
-  }
-  .safe-space-nav-btn:hover { background: rgba(184,134,11,0.15); }
-  .safe-space-nav-btn.active { background: var(--gold); color: var(--ink); }
-
-  /* Safe Space overlay */
-  .safe-space-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(44,36,22,0.55);
-    align-items: flex-end;
-    justify-content: center;
-  }
-  .safe-space-overlay.open { display: flex; }
-
-  .safe-space-panel {
-    background: var(--cream);
-    width: 100%;
-    max-width: 620px;
-    max-height: 88vh;
-    border-radius: 22px 22px 0 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 -8px 40px rgba(44,36,22,0.25);
-    animation: slideUp 0.32s cubic-bezier(0.34,1.2,0.64,1) both;
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(100%); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-  }
-
-  .ss-header {
-    background: var(--ink);
-    padding: 1.1rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-  }
-
-  .ss-header-left { display: flex; flex-direction: column; gap: 2px; }
-
-  .ss-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--gold-pale);
-  }
-
-  .ss-subtitle {
-    font-size: 0.78rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.06em;
-  }
-
-  .ss-close {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: transparent;
-    color: var(--gold-pale);
-    font-size: 1.1rem;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.2s;
-  }
-  .ss-close:hover { background: rgba(255,255,255,0.1); }
-
-  .ss-verse-banner {
-    background: var(--gold-pale);
-    border-bottom: 1px solid var(--parchment-dark);
-    padding: 10px 1.5rem;
-    font-style: italic;
-    font-size: 0.88rem;
-    color: var(--ink-muted);
-    line-height: 1.55;
-    flex-shrink: 0;
-  }
-
-  .ss-verse-banner strong {
-    font-style: normal;
-    color: var(--gold);
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 2px;
-  }
-
-  .ss-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .ss-messages::-webkit-scrollbar { width: 4px; }
-  .ss-messages::-webkit-scrollbar-thumb { background: var(--parchment-dark); border-radius: 2px; }
-
-  .ss-msg {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 12px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    animation: fadeIn 0.3s ease both;
-  }
-
-  .ss-msg-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .ss-msg-author {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--gold);
-    letter-spacing: 0.04em;
-  }
-
-  .ss-msg-time {
-    font-size: 0.72rem;
-    color: var(--ink-faint);
-  }
-
-  .ss-msg-text {
-    font-size: 0.97rem;
-    color: var(--ink);
-    line-height: 1.65;
-  }
-
-  .ss-msg-verse {
-    font-size: 0.8rem;
-    font-style: italic;
-    color: var(--ink-faint);
-    padding-top: 6px;
-    border-top: 1px dashed var(--border);
-    line-height: 1.5;
-  }
-
-  .ss-empty {
-    text-align: center;
-    padding: 2.5rem 1rem;
-    color: var(--ink-faint);
-    font-style: italic;
-    font-size: 0.95rem;
-    line-height: 1.7;
-  }
-
-  .ss-compose {
-    border-top: 1px solid var(--border);
-    padding: 1rem 1.25rem;
-    background: var(--parchment);
-    flex-shrink: 0;
-  }
-
-  .ss-compose textarea {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1px solid var(--border-strong);
-    border-radius: 12px;
-    background: var(--cream);
-    font-family: 'Lora', serif;
-    font-size: 0.97rem;
-    color: var(--ink);
-    resize: none;
-    outline: none;
-    min-height: 70px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    line-height: 1.6;
-  }
-
-  .ss-compose textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(184,134,11,0.1);
-  }
-
-  .ss-compose textarea::placeholder { color: var(--ink-faint); }
-
-  .ss-compose-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .ss-anon-note {
-    font-size: 0.78rem;
-    color: var(--ink-faint);
-    font-style: italic;
-  }
-
-  .ss-send-btn {
-    padding: 9px 22px;
-    background: var(--ink);
-    color: var(--gold-pale);
-    border: none;
-    border-radius: 10px;
-    font-family: 'Lora', serif;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .ss-send-btn:hover { background: #3d3220; }
-
-  @media (max-width: 700px) {
-    .safe-space-nav-btn { font-size: 0.88rem; padding: 8px 14px; }
-    .ss-title { font-size: 1.1rem; }
-    .ss-msg-text { font-size: 1rem; }
-    .ss-compose textarea { font-size: 1rem; }
-  }
-
-  /* Toast */
-    .toast { font-size: 1rem; right: 1rem; bottom: 1rem; left: 1rem; text-align: center; }
-
-    /* Footer */
-    footer { font-size: 0.9rem !important; padding: 1.25rem 1rem !important; }
-  }
-
-  /* ── SMALL PHONES (iPhone SE etc) ── */
-  @media (max-width: 390px) {
-    .header-title { font-size: 1.15rem; }
-    .chapter-title-main { font-size: 1.45rem; }
-    .book-btn { font-size: 1rem; }
-    .chapter-num-btn { width: 42px; height: 42px; font-size: 0.95rem; }
-    .verse { font-size: 1.05rem; }
-    .verse-text { font-size: 1.05rem; }
-    .quiz-question { font-size: 1.1rem; }
-    .quiz-opt-btn { font-size: 1rem; padding: 13px 16px; }
-    .card-title { font-size: 1.1rem; }
-  }
-
-  /* ══════════════════════════════
-     WELCOME PAGE
-  ══════════════════════════════ */
-  #welcomePage {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  #welcomePage.hidden { display: none; }
-
-  /* Hero */
-  .wp-hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 4rem 1.5rem 6rem;
-    position: relative;
-    background:
-      radial-gradient(ellipse at 50% 0%, rgba(184,134,11,0.13) 0%, transparent 65%),
-      radial-gradient(ellipse at 20% 100%, rgba(139,58,26,0.08) 0%, transparent 55%),
-      var(--cream);
-    overflow: hidden;
-  }
-  .wp-hero::before {
-    content: '✝';
-    position: absolute;
-    font-size: 40rem;
-    color: rgba(184,134,11,0.04);
-    top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    pointer-events: none;
-    line-height: 1;
-  }
-  .wp-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--gold-pale);
-    border: 1px solid rgba(184,134,11,0.3);
-    border-radius: 50px;
-    padding: 7px 18px;
-    font-size: 0.82rem;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 1.75rem;
-    font-weight: 500;
-    animation: wpFadeDown 0.7s ease both;
-  }
-  .wp-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2.8rem, 8vw, 5rem);
-    font-weight: 700;
-    line-height: 1.12;
-    color: var(--ink);
-    margin-bottom: 0.5rem;
-    animation: wpFadeDown 0.7s 0.1s ease both;
-  }
-  .wp-title em { font-style: italic; color: var(--gold); }
-  .wp-sub {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    color: var(--ink-muted);
-    max-width: 520px;
-    line-height: 1.75;
-    margin-bottom: 2rem;
-    animation: wpFadeDown 0.7s 0.2s ease both;
-  }
-  .wp-verse {
-    font-style: italic;
-    font-size: 1rem;
-    color: var(--ink-faint);
-    margin-bottom: 2.5rem;
-    animation: wpFadeDown 0.7s 0.25s ease both;
-  }
-  .wp-verse span {
-    font-style: normal;
-    font-size: 0.8rem;
-    color: var(--gold);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    display: block;
-    margin-top: 4px;
-  }
-  .wp-btns {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: center;
-    animation: wpFadeDown 0.7s 0.3s ease both;
-  }
-  .wp-btn-primary {
-    padding: 15px 36px;
-    background: var(--ink);
-    color: var(--gold-pale);
-    border: none;
-    border-radius: 50px;
-    font-family: 'Lora', serif;
-    font-size: 1.05rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 20px rgba(44,36,22,0.2);
-  }
-  .wp-btn-primary:hover { background: #3d3220; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(44,36,22,0.25); }
-  .wp-btn-secondary {
-    padding: 15px 36px;
-    background: transparent;
-    color: var(--ink);
-    border: 2px solid var(--border);
-    border-radius: 50px;
-    font-family: 'Lora', serif;
-    font-size: 1.05rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.25s ease;
-  }
-  .wp-btn-secondary:hover { background: var(--parchment); border-color: var(--gold); transform: translateY(-2px); }
-  .wp-scroll-hint {
-    position: absolute;
-    bottom: 2rem; left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.75rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    animation: wpFadeDown 1s 0.8s ease both;
-  }
-  .wp-scroll-arrow {
-    width: 18px; height: 18px;
-    border-right: 2px solid var(--ink-faint);
-    border-bottom: 2px solid var(--ink-faint);
-    transform: rotate(45deg);
-    animation: wpBounce 1.5s infinite;
-  }
-  @keyframes wpBounce {
-    0%,100% { transform: rotate(45deg) translateY(0); }
-    50%      { transform: rotate(45deg) translateY(5px); }
-  }
-
-  /* Stats bar */
-  .wp-stats {
-    background: var(--ink);
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0;
-  }
-  .wp-stat {
-    text-align: center;
-    padding: 1.25rem 2.5rem;
-    border-right: 1px solid rgba(255,255,255,0.1);
-  }
-  .wp-stat:last-child { border-right: none; }
-  .wp-stat-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.9rem;
-    font-weight: 700;
-    color: var(--gold-light);
-    line-height: 1;
-  }
-  .wp-stat-label {
-    font-size: 0.72rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  /* Features */
-  .wp-features {
-    padding: 5rem 1.5rem;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .wp-section-tag {
-    text-align: center;
-    font-size: 0.78rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 0.75rem;
-    font-weight: 500;
-  }
-  .wp-section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.7rem, 4vw, 2.5rem);
-    font-weight: 600;
-    text-align: center;
-    color: var(--ink);
-    margin-bottom: 0.75rem;
-    line-height: 1.25;
-  }
-  .wp-section-sub {
-    text-align: center;
-    font-size: 1rem;
-    color: var(--ink-muted);
-    max-width: 480px;
-    margin: 0 auto 3rem;
-    line-height: 1.7;
-  }
-  .wp-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-    gap: 1.25rem;
-  }
-  .wp-card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 1.75rem;
-    transition: transform 0.25s, box-shadow 0.25s;
-  }
-  .wp-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(44,36,22,0.1); }
-  .wp-card-icon {
-    width: 50px; height: 50px;
-    border-radius: 13px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
-  }
-  .wp-card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 0.5rem;
-  }
-  .wp-card-desc { font-size: 0.93rem; color: var(--ink-muted); line-height: 1.68; }
-
-  /* Big verse */
-  .wp-big-verse {
-    background: var(--ink);
-    padding: 4.5rem 2rem;
-    text-align: center;
-  }
-  .wp-big-verse-text {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.4rem, 3.5vw, 2.3rem);
-    font-style: italic;
-    color: var(--gold-pale);
-    max-width: 760px;
-    margin: 0 auto 1rem;
-    line-height: 1.55;
-  }
-  .wp-big-verse-ref {
-    font-size: 0.85rem;
-    color: var(--gold);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  /* Steps */
-  .wp-how {
-    padding: 5rem 1.5rem;
-    max-width: 860px;
-    margin: 0 auto;
-  }
-  .wp-steps { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 2.5rem; }
-  .wp-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.4rem 1.75rem;
-    transition: box-shadow 0.2s;
-  }
-  .wp-step:hover { box-shadow: 0 4px 20px rgba(44,36,22,0.08); }
-  .wp-step-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--gold);
-    line-height: 1;
-    flex-shrink: 0;
-    min-width: 32px;
-  }
-  .wp-step-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
-  .wp-step-desc { font-size: 0.93rem; color: var(--ink-muted); line-height: 1.65; }
-
-  /* CTA */
-  .wp-cta {
-    padding: 5rem 1.5rem;
-    text-align: center;
-    background: var(--parchment);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .wp-cta-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 5vw, 2.8rem);
-    font-weight: 700;
-    color: var(--ink);
-    margin-bottom: 1rem;
-    line-height: 1.2;
-  }
-  .wp-cta-sub {
-    font-size: 1.05rem;
-    color: var(--ink-muted);
-    margin-bottom: 2.5rem;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.7;
-  }
-
-  /* Welcome footer */
-  .wp-footer {
-    background: var(--ink);
-    padding: 2rem;
-    text-align: center;
-    color: var(--ink-faint);
-    font-size: 0.85rem;
-    line-height: 1.8;
-  }
-  .wp-footer-brand {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.25rem;
-    color: var(--gold-pale);
-    margin-bottom: 0.4rem;
-  }
-  .wp-footer-copy { font-size: 0.78rem; color: var(--ink-faint); margin-top: 0.5rem; }
-
-  @keyframes wpFadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Welcome mobile */
-  @media (max-width: 640px) {
-    .wp-hero { padding: 3.5rem 1.25rem 6rem; }
-    .wp-btns { flex-direction: column; align-items: center; }
-    .wp-btn-primary, .wp-btn-secondary { width: 100%; max-width: 300px; justify-content: center; }
-    .wp-stat { padding: 0.85rem 1.25rem; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .wp-stat:last-child { border-bottom: none; }
-    .wp-stats { flex-direction: column; align-items: center; }
-    .wp-features { padding: 3rem 1.25rem; }
-    .wp-how { padding: 3rem 1.25rem; }
-    .wp-cta { padding: 3rem 1.25rem; }
-    .wp-step { flex-direction: column; gap: 0.6rem; }
-    .wp-big-verse { padding: 3rem 1.25rem; }
-  }
+/* ══════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════ */
+:root {
+  --bg:          #0f0b06;
+  --bg-2:        #1a1208;
+  --bg-3:        #231a0d;
+  --surface:     #2c2112;
+  --surface-2:   #352818;
+  --border:      rgba(255,200,80,0.10);
+  --border-md:   rgba(255,200,80,0.18);
+  --border-lg:   rgba(255,200,80,0.30);
+  --gold:        #d4a843;
+  --gold-bright: #f0c85a;
+  --gold-dim:    #8a6a1e;
+  --gold-glow:   rgba(212,168,67,0.15);
+  --text:        #f0e6cc;
+  --text-2:      #b89d70;
+  --text-3:      #7a6440;
+  --green:       #4caf7d;
+  --green-bg:    rgba(76,175,125,0.12);
+  --red:         #e05c4b;
+  --red-bg:      rgba(224,92,75,0.12);
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   18px;
+  --radius-xl:   24px;
+  --transition:  0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 2px; }
+
+/* ══════════════════════════════════════
+   WELCOME / LANDING PAGE
+══════════════════════════════════════ */
+#welcomePage { min-height: 100vh; display: flex; flex-direction: column; }
+#welcomePage.hidden { display: none; }
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 1.5rem 7rem;
+  position: relative;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,168,67,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,58,26,0.15) 0%, transparent 60%),
+    var(--bg);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '✝';
+  position: absolute;
+  font-size: 50vw;
+  color: rgba(212,168,67,0.03);
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+  line-height: 1;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212,168,67,0.1);
+  border: 1px solid var(--border-lg);
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-size: 0.78rem;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  animation: fadeUp 0.6s ease both;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 9vw, 6rem);
+  font-weight: 700;
+  line-height: 1.08;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero-title em { font-style: italic; color: var(--gold); }
+
+.hero-sub {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  color: var(--text-2);
+  max-width: 500px;
+  line-height: 1.8;
+  margin-bottom: 1.75rem;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-verse {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--text-3);
+  margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s 0.25s ease both;
+}
+.hero-verse b {
+  font-style: normal;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: var(--gold-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: block;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.hero-btns {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+
+.btn-gold {
+  padding: 15px 36px;
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  border-radius: 50px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition);
+  box-shadow: 0 0 30px rgba(212,168,67,0.3);
+}
+.btn-gold:hover {
+  background: var(--gold-bright);
+  transform: translateY(-2px);
+  box-shadow: 0 0 40px rgba(212,168,67,0.45);
+}
+
+.btn-outline {
+  padding: 15px 36px;
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border-md);
+  border-radius: 50px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all var(--transition);
+}
+.btn-outline:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-3);
+  animation: fadeUp 1s 0.8s ease both;
+}
+.scroll-arrow {
+  width: 16px; height: 16px;
+  border-right: 1.5px solid var(--text-3);
+  border-bottom: 1.5px solid var(--text-3);
+  transform: rotate(45deg);
+  animation: bounce 1.6s infinite;
+}
+@keyframes bounce { 0%,100%{transform:rotate(45deg) translateY(0)} 50%{transform:rotate(45deg) translateY(5px)} }
+
+/* Stats bar */
+.stats-bar {
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.stat-item {
+  text-align: center;
+  padding: 1.25rem 3rem;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* Features */
+.section { padding: 5rem 1.5rem; max-width: 1100px; margin: 0 auto; }
+.section-tag {
+  text-align: center; font-size: 0.72rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 0.75rem;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700; text-align: center; color: var(--text);
+  margin-bottom: 0.75rem; line-height: 1.2;
+}
+.section-sub {
+  text-align: center; font-size: 1rem; color: var(--text-2);
+  max-width: 480px; margin: 0 auto 3.5rem; line-height: 1.75;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+.feature-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  transition: all var(--transition);
+}
+.feature-card:hover {
+  border-color: var(--border-md);
+  transform: translateY(-3px);
+  background: var(--bg-3);
+}
+.feature-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; margin-bottom: 1rem;
+  background: var(--gold-glow);
+  border: 1px solid var(--border-md);
+}
+.feature-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;
+}
+.feature-desc { font-size: 0.9rem; color: var(--text-2); line-height: 1.7; }
+
+/* Big verse */
+.verse-section {
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 5rem 2rem;
+  text-align: center;
+}
+.big-verse {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.4rem, 3.5vw, 2.4rem);
+  font-style: italic; font-weight: 400;
+  color: var(--text); max-width: 760px;
+  margin: 0 auto 1rem; line-height: 1.55;
+}
+.verse-ref {
+  font-size: 0.8rem; color: var(--gold);
+  letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
+}
+
+/* Steps */
+.steps { display: flex; flex-direction: column; gap: 1rem; margin-top: 2.5rem; }
+.step {
+  display: flex; align-items: flex-start; gap: 1.5rem;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.4rem 1.75rem;
+  transition: border-color var(--transition);
+}
+.step:hover { border-color: var(--border-md); }
+.step-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 700; color: var(--gold);
+  line-height: 1; flex-shrink: 0; min-width: 32px;
+}
+.step-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 3px;
+}
+.step-desc { font-size: 0.9rem; color: var(--text-2); line-height: 1.65; }
+
+/* CTA */
+.cta-section {
+  padding: 5rem 1.5rem; text-align: center;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(212,168,67,0.1) 0%, transparent 70%);
+  border-top: 1px solid var(--border);
+}
+.cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700; color: var(--text);
+  margin-bottom: 1rem; line-height: 1.2;
+}
+.cta-sub {
+  font-size: 1.05rem; color: var(--text-2);
+  margin-bottom: 2.5rem; max-width: 400px;
+  margin-left: auto; margin-right: auto; line-height: 1.75;
+}
+
+.lp-footer {
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+  padding: 2rem; text-align: center;
+}
+.lp-footer-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem; color: var(--gold); margin-bottom: 0.4rem;
+}
+.lp-footer-copy { font-size: 0.78rem; color: var(--text-3); margin-top: 4px; }
+
+/* ══════════════════════════════════════
+   APP
+══════════════════════════════════════ */
+#appPage { display: none; min-height: 100vh; flex-direction: column; }
+#appPage.visible { display: flex; }
+
+/* ── APP HEADER ── */
+.app-header {
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(10px);
+}
+.app-brand {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.app-brand-icon {
+  width: 34px; height: 34px;
+  background: var(--gold);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--bg); font-weight: bold;
+}
+.app-brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem; font-weight: 600; color: var(--text);
+}
+.app-brand-sub {
+  font-size: 0.68rem; color: var(--text-3);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Progress in header */
+.header-progress {
+  flex: 1; max-width: 260px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.header-progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.7rem; color: var(--text-3); font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.header-progress-track {
+  height: 4px; background: var(--surface); border-radius: 2px; overflow: hidden;
+}
+.header-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  border-radius: 2px; transition: width 0.5s ease;
+}
+
+.ss-trigger-btn {
+  padding: 7px 16px;
+  background: var(--gold-glow);
+  border: 1px solid var(--border-md);
+  border-radius: 20px;
+  font-size: 0.82rem; font-weight: 600;
+  color: var(--gold); cursor: pointer;
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.ss-trigger-btn:hover { background: rgba(212,168,67,0.2); border-color: var(--border-lg); }
+
+/* ── APP LAYOUT ── */
+.app-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 57px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-top { padding: 0.85rem; border-bottom: 1px solid var(--border); }
+.sidebar-search {
+  width: 100%; padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text); font-size: 0.9rem;
+  outline: none; transition: border-color var(--transition);
+}
+.sidebar-search:focus { border-color: var(--border-lg); }
+.sidebar-search::placeholder { color: var(--text-3); }
+
+.testament-tabs {
+  display: flex; gap: 4px;
+  padding: 0.65rem 0.85rem 0;
+}
+.t-tab {
+  flex: 1; padding: 7px 8px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-3); font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+}
+.t-tab.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.t-tab:hover:not(.active) { border-color: var(--border-md); color: var(--text-2); }
+
+.books-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
+.book-btn {
+  width: 100%; text-align: left;
+  padding: 9px 12px;
+  background: transparent; border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-2); font-size: 0.9rem;
+  cursor: pointer; transition: all var(--transition);
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.book-btn:hover { background: var(--surface); color: var(--text); }
+.book-btn.active { background: var(--gold-glow); color: var(--gold); border: 1px solid var(--border-md); }
+.book-badge {
+  font-size: 0.7rem; color: var(--text-3);
+  background: var(--surface);
+  padding: 2px 7px; border-radius: 10px; min-width: 28px; text-align: center;
+  font-weight: 600;
+}
+.book-btn.active .book-badge { background: var(--gold); color: var(--bg); }
+.completed-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green); flex-shrink: 0; display: none;
+}
+.book-btn.has-progress .completed-dot { display: block; }
+
+/* ── MAIN PANEL ── */
+.main-panel {
+  display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--bg);
+}
+
+/* Welcome screen */
+.welcome-screen {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 3rem 2rem; text-align: center; gap: 1rem;
+}
+.welcome-icon { font-size: 3rem; }
+.welcome-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-style: italic; color: var(--text);
+}
+.welcome-sub { font-size: 0.95rem; color: var(--text-2); max-width: 360px; line-height: 1.75; }
+.welcome-hint {
+  margin-top: 0.5rem; padding: 10px 18px;
+  background: var(--gold-glow); border: 1px solid var(--border-md);
+  border-radius: var(--radius-md); font-size: 0.88rem; color: var(--gold);
+}
+
+/* Chapter view */
+.chapter-view { display: none; flex-direction: column; }
+.chapter-view.visible { display: flex; }
+
+/* Chapter header */
+.chapter-header {
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+  position: sticky; top: 0; z-index: 10;
+}
+.chapter-crumb {
+  font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-3); font-weight: 600; margin-bottom: 4px;
+}
+.chapter-title-row {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.chapter-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem; font-weight: 700; color: var(--text);
+}
+.chapter-nav { display: flex; gap: 8px; }
+.nav-btn {
+  padding: 8px 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-2);
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+}
+.nav-btn:hover { border-color: var(--border-md); color: var(--text); }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Chapters grid */
+.chapters-section {
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+  background: var(--bg-2);
+}
+.section-label {
+  font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-3); font-weight: 600; margin-bottom: 10px;
+}
+.chapters-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.ch-btn {
+  width: 40px; height: 40px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-2); font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.ch-btn:hover { border-color: var(--border-md); color: var(--text); background: var(--bg-3); }
+.ch-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.ch-btn.completed { border-color: var(--green); color: var(--green); }
+.ch-btn.locked { opacity: 0.4; cursor: not-allowed; }
+.ch-btn.completed::after {
+  content: '';
+  position: absolute; bottom: 3px; right: 3px;
+  width: 5px; height: 5px; background: var(--green); border-radius: 50%;
+}
+
+/* Content area */
+.chapter-content { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Cards */
+.card {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.card-header {
+  padding: 12px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-3);
+}
+.card-icon {
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  background: var(--gold-glow); border: 1px solid var(--border-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.card-title {
+  font-size: 0.95rem; font-weight: 600; color: var(--text);
+}
+.card-body { padding: 1.25rem; }
+
+/* Scripture */
+.translation-select {
+  margin-left: auto; padding: 5px 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-2);
+  font-size: 0.78rem; font-weight: 600; cursor: pointer; outline: none;
+}
+.verses-wrap { max-height: 400px; overflow-y: auto; padding: 1.25rem; }
+.verse { display: flex; gap: 12px; margin-bottom: 0.9rem; line-height: 1.8; }
+.v-num {
+  font-size: 0.75rem; font-weight: 600; color: var(--gold);
+  min-width: 22px; padding-top: 4px; text-align: right; flex-shrink: 0;
+}
+.v-text { font-size: 0.98rem; color: var(--text-2); line-height: 1.82; }
+.verses-msg { padding: 2rem; text-align: center; color: var(--text-3); font-size: 0.9rem; font-style: italic; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.verse { animation: fadeIn 0.3s ease both; }
+
+/* Video */
+.video-frame {
+  width: 100%; aspect-ratio: 16/9;
+  border-radius: var(--radius-sm); display: block;
+  background: var(--surface); border: none;
+}
+
+/* Quiz */
+.quiz-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.quiz-progress-track {
+  height: 4px; background: var(--surface);
+  border-radius: 2px; overflow: hidden; margin-bottom: 0.25rem;
+}
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  border-radius: 2px; transition: width 0.4s ease;
+}
+.quiz-meta {
+  display: flex; justify-content: space-between;
+  font-size: 0.78rem; font-weight: 600; color: var(--text-3);
+}
+.quiz-meta span b { color: var(--gold); }
+.quiz-q {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; line-height: 1.65; color: var(--text);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.quiz-opts { display: flex; flex-direction: column; gap: 8px; }
+.q-btn {
+  width: 100%; text-align: left;
+  padding: 13px 16px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius-md); color: var(--text-2);
+  font-size: 0.95rem; cursor: pointer;
+  transition: all var(--transition); line-height: 1.4;
+}
+.q-btn:hover:not(:disabled) { border-color: var(--border-md); color: var(--text); background: var(--bg-3); }
+.q-btn.correct { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+.q-btn.wrong   { background: var(--red-bg);   border-color: var(--red);   color: var(--red); }
+.q-btn:disabled { cursor: default; }
+.quiz-feedback {
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  font-size: 0.9rem; font-weight: 600; display: none;
+}
+.quiz-feedback.correct-fb { display:block; background:var(--green-bg); color:var(--green); border:1px solid rgba(76,175,125,0.25); }
+.quiz-feedback.wrong-fb   { display:block; background:var(--red-bg);   color:var(--red);   border:1px solid rgba(224,92,75,0.25); }
+
+/* Score card */
+.score-card {
+  border-radius: var(--radius-lg); padding: 1.5rem;
+  text-align: center; border: 1px solid;
+  display: none;
+}
+.score-card.passed { background:var(--green-bg); border-color:rgba(76,175,125,0.3); }
+.score-card.failed { background:var(--red-bg);   border-color:rgba(224,92,75,0.25); }
+.score-circle {
+  width: 88px; height: 88px; border-radius: 50%;
+  margin: 0 auto 1rem; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  border: 2px solid;
+}
+.score-card.passed .score-circle { border-color:var(--green); background:rgba(76,175,125,0.1); }
+.score-card.failed .score-circle { border-color:var(--red);   background:rgba(224,92,75,0.08); }
+.score-pct {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem; font-weight: 700; line-height: 1;
+}
+.score-card.passed .score-pct { color:var(--green); }
+.score-card.failed .score-pct { color:var(--red); }
+.score-frac { font-size: 0.72rem; color: var(--text-3); margin-top: 2px; font-weight: 600; }
+.score-label {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem;
+}
+.score-sub { font-size: 0.88rem; color: var(--text-2); line-height: 1.65; margin-bottom: 1rem; }
+.score-dots {
+  display: flex; gap: 6px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 1.25rem;
+}
+.sdot {
+  width: 13px; height: 13px; border-radius: 50%; display: inline-block;
+}
+.sdot.ok  { background: var(--green); }
+.sdot.bad { background: var(--red); }
+.score-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.score-btn {
+  padding: 11px 22px; border-radius: 50px;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: all var(--transition); border: none;
+}
+.score-btn.primary { background: var(--green); color: #fff; }
+.score-btn.primary:hover { filter: brightness(1.1); }
+.score-btn.secondary {
+  background: transparent; color: var(--text-2);
+  border: 1px solid var(--border-md);
+}
+.score-btn.secondary:hover { border-color: var(--border-lg); color: var(--text); }
+
+/* Pass badge */
+.pass-badge {
+  margin-left: auto;
+  background: var(--green-bg); color: var(--green);
+  font-size: 0.72rem; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+  border: 1px solid rgba(76,175,125,0.3);
+  display: none;
+}
+
+/* Stats panel */
+.stats-panel {
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+  margin: 0 1.5rem 1.25rem;
+}
+.stats-panel-title {
+  font-size: 0.8rem; font-weight: 600; color: var(--text-2);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.85rem;
+}
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 0.82rem; font-weight: 600;
+  background: var(--surface); color: var(--text-3);
+  border: 1px solid var(--border);
+}
+.pill b { color: var(--text); }
+.pill.green { background:var(--green-bg); color:var(--green); border-color:rgba(76,175,125,0.25); }
+.pill.green b { color:var(--green); }
+.pill.gold  { background:var(--gold-glow); color:var(--gold); border-color:var(--border-md); }
+.pill.gold b { color:var(--gold); }
+.pill.blue  { background:rgba(66,135,245,0.1); color:#6aabff; border-color:rgba(66,135,245,0.2); }
+.pill.blue b { color:#6aabff; }
+
+/* Mark complete */
+.complete-section { padding: 0 1.5rem 2rem; }
+.complete-btn {
+  width: 100%; padding: 13px;
+  background: transparent;
+  border: 1.5px dashed var(--border-md);
+  border-radius: var(--radius-lg); color: var(--text-3);
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.complete-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+.complete-btn.done { border-style: solid; border-color: var(--green); color: var(--green); background: var(--green-bg); cursor: default; }
+
+/* ── SAFE SPACE ── */
+.ss-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7);
+  align-items: flex-end; justify-content: center;
+}
+.ss-overlay.open { display: flex; }
+.ss-panel {
+  background: var(--bg-2); width: 100%; max-width: 600px;
+  max-height: 85vh; border-radius: 20px 20px 0 0;
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--border-md); border-bottom: none;
+  animation: slideUp 0.3s cubic-bezier(0.34,1.2,0.64,1) both;
+}
+@keyframes slideUp { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+.ss-head {
+  background: var(--bg-3); padding: 1rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.ss-head-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 600; color: var(--text);
+}
+.ss-head-sub { font-size: 0.75rem; color: var(--text-3); font-weight: 600; margin-top: 1px; }
+.ss-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-2); font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.ss-close:hover { border-color: var(--border-md); color: var(--text); }
+.ss-banner {
+  padding: 10px 1.25rem; background: var(--gold-glow);
+  border-bottom: 1px solid var(--border-md); flex-shrink: 0;
+  font-size: 0.85rem; color: var(--gold); line-height: 1.55;
+}
+.ss-banner b { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+.ss-msgs { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
+.ss-empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-3); font-style: italic; font-size: 0.9rem; }
+.ss-msg {
+  background: var(--bg-3); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 5px;
+  animation: fadeIn 0.3s ease both;
+}
+.ss-msg-top { display: flex; justify-content: space-between; align-items: center; }
+.ss-msg-author { font-size: 0.75rem; font-weight: 600; color: var(--gold); }
+.ss-msg-time { font-size: 0.7rem; color: var(--text-3); font-weight: 600; }
+.ss-msg-text { font-size: 0.92rem; color: var(--text-2); line-height: 1.6; }
+.ss-compose {
+  border-top: 1px solid var(--border); padding: 0.85rem 1rem;
+  background: var(--bg-3); flex-shrink: 0;
+}
+.ss-compose textarea {
+  width: 100%; padding: 10px 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-md); color: var(--text);
+  font-size: 0.9rem; resize: none; outline: none;
+  min-height: 65px; line-height: 1.6;
+  transition: border-color var(--transition);
+}
+.ss-compose textarea:focus { border-color: var(--border-lg); }
+.ss-compose textarea::placeholder { color: var(--text-3); }
+.ss-compose-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px; gap: 10px;
+}
+.ss-anon { font-size: 0.75rem; color: var(--text-3); font-weight: 600; }
+.ss-send {
+  padding: 8px 20px;
+  background: var(--gold); color: var(--bg);
+  border: none; border-radius: 20px;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+}
+.ss-send:hover { background: var(--gold-bright); }
+
+/* ── INSTALL BANNER ── */
+.install-banner {
+  display: none; position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-2); border-top: 1px solid var(--border-md);
+  padding: 14px 20px;
+  align-items: center; gap: 12px; z-index: 9999;
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.4); flex-wrap: wrap;
+}
+.install-text { font-size: 0.88rem; color: var(--text-2); flex: 1; font-weight: 500; }
+.install-text b { display: block; font-size: 0.95rem; color: var(--text); margin-bottom: 2px; }
+.install-btn {
+  padding: 9px 20px; background: var(--gold); color: var(--bg);
+  border: none; border-radius: 20px;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+}
+.install-btn:hover { background: var(--gold-bright); }
+.install-dismiss {
+  padding: 9px 12px; background: transparent;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-3); font-size: 0.88rem; cursor: pointer;
+  transition: border-color var(--transition);
+}
+.install-dismiss:hover { border-color: var(--border-md); }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  background: var(--bg-2); border: 1px solid var(--border-md);
+  color: var(--text); padding: 10px 18px;
+  border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s ease; z-index: 9999; pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* APP FOOTER */
+.app-footer {
+  text-align: center; padding: 1.1rem;
+  font-size: 0.75rem; color: var(--text-3); font-weight: 600;
+  border-top: 1px solid var(--border); background: var(--bg-2);
+}
+
+/* ── MOBILE ── */
+@media (max-width: 700px) {
+  .app-layout { grid-template-columns: 1fr; height: auto; }
+  .sidebar { max-height: 260px; border-right: none; border-bottom: 1px solid var(--border); }
+  .app-brand-name { font-size: 1rem; }
+  .header-progress { max-width: 100%; width: 100%; order: 3; }
+  .chapter-title { font-size: 1.45rem; }
+  .chapter-content { padding: 1rem; }
+  .chapters-section { padding: 0.85rem 1rem; }
+  .chapter-header { padding: 1rem; }
+  .stats-panel { margin: 0 1rem 1rem; }
+  .complete-section { padding: 0 1rem 1.5rem; }
+  .ch-btn { width: 44px; height: 44px; font-size: 0.9rem; }
+  .v-text { font-size: 1.02rem; }
+  .quiz-q { font-size: 1.05rem; }
+  .q-btn { font-size: 0.98rem; padding: 14px 16px; }
+  .stat-item { padding: 1rem 1.5rem; border-right: none; border-bottom: 1px solid var(--border); }
+  .stat-item:last-child { border-bottom: none; }
+  .stats-bar { flex-direction: column; align-items: center; }
+  .hero-btns { flex-direction: column; align-items: center; }
+  .btn-gold, .btn-outline { width: 100%; max-width: 280px; justify-content: center; }
+  .step { flex-direction: column; gap: 0.6rem; }
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════
+<!-- ══════════════════════════════════════
      WELCOME PAGE
-═══════════════════════════ -->
+══════════════════════════════════════ -->
 <div id="welcomePage">
-
-  <section class="wp-hero">
-    <div class="wp-badge">✝ Scripture Study by Gabriel Mubanga</div>
-    <h1 class="wp-title">Grow Deeper in<br><em>God's Word</em></h1>
-    <p class="wp-sub">A complete Bible study platform with verse reading, video teachings, knowledge quizzes and reading progress tracking — all in one place.</p>
-    <div class="wp-verse">
+  <section class="hero">
+    <div class="hero-badge">✝ Scripture Study · Gabriel Mubanga</div>
+    <h1 class="hero-title">Grow Deeper in<br><em>God's Word</em></h1>
+    <p class="hero-sub">A complete Bible study platform — read scripture, watch teachings, test your knowledge and track your journey through all 66 books.</p>
+    <div class="hero-verse">
       "Your word is a lamp to my feet and a light to my path."
-      <span>Psalm 119:105</span>
+      <b>Psalm 119:105</b>
     </div>
-    <div class="wp-btns">
-      <button class="wp-btn-primary" onclick="enterApp()">📖 Start Studying</button>
-      <button class="wp-btn-secondary" onclick="document.getElementById('wpFeatures').scrollIntoView({behavior:'smooth'})">Learn More ↓</button>
+    <div class="hero-btns">
+      <button class="btn-gold" onclick="enterApp()">📖 Start Studying</button>
+      <button class="btn-outline" onclick="document.getElementById('wpFeatures').scrollIntoView({behavior:'smooth'})">Learn More ↓</button>
     </div>
-    <div class="wp-scroll-hint">Scroll<div class="wp-scroll-arrow"></div></div>
+    <div class="scroll-hint">Scroll<div class="scroll-arrow"></div></div>
   </section>
 
-  <div class="wp-stats">
-    <div class="wp-stat"><div class="wp-stat-num">66</div><div class="wp-stat-label">Books of the Bible</div></div>
-    <div class="wp-stat"><div class="wp-stat-num">1,189</div><div class="wp-stat-label">Chapters</div></div>
-    <div class="wp-stat"><div class="wp-stat-num">2</div><div class="wp-stat-label">Translations</div></div>
-    <div class="wp-stat"><div class="wp-stat-num">Free</div><div class="wp-stat-label">Always</div></div>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">66</div><div class="stat-label">Books</div></div>
+    <div class="stat-item"><div class="stat-num">1,189</div><div class="stat-label">Chapters</div></div>
+    <div class="stat-item"><div class="stat-num">80%</div><div class="stat-label">Pass Mark</div></div>
+    <div class="stat-item"><div class="stat-num">Free</div><div class="stat-label">Always</div></div>
   </div>
 
-  <div class="wp-features" id="wpFeatures">
-    <div class="wp-section-tag">What's inside</div>
-    <h2 class="wp-section-title">Everything you need to study the Bible</h2>
-    <p class="wp-section-sub">From Genesis to Revelation — read, watch, learn and track your journey.</p>
-    <div class="wp-grid">
-      <div class="wp-card"><div class="wp-card-icon" style="background:rgba(184,134,11,0.12);">📖</div><div class="wp-card-title">Full Scripture Reading</div><div class="wp-card-desc">Read any chapter from all 66 books in KJV or ASV translation with beautiful formatting.</div></div>
-      <div class="wp-card"><div class="wp-card-icon" style="background:rgba(139,58,26,0.1);">▶</div><div class="wp-card-title">Video Teachings</div><div class="wp-card-desc">Watch curated video teachings for each chapter — perfect for deeper understanding.</div></div>
-      <div class="wp-card"><div class="wp-card-icon" style="background:rgba(74,103,65,0.12);">?</div><div class="wp-card-title">Knowledge Quizzes</div><div class="wp-card-desc">Test your understanding after reading each chapter. Retry until you get it right.</div></div>
-      <div class="wp-card"><div class="wp-card-icon" style="background:rgba(44,36,22,0.07);">📊</div><div class="wp-card-title">Reading Progress</div><div class="wp-card-desc">Mark chapters complete and track your journey across all 1,189 chapters of the Bible.</div></div>
-      <div class="wp-card"><div class="wp-card-icon" style="background:rgba(184,134,11,0.12);">🔍</div><div class="wp-card-title">Search & Filter</div><div class="wp-card-desc">Quickly find any book. Filter by Old or New Testament to focus your study.</div></div>
-      <div class="wp-card"><div class="wp-card-icon" style="background:rgba(139,58,26,0.1);">🌟</div><div class="wp-card-title">Safe Space</div><div class="wp-card-desc">A community space — share encouragement and suggest features you'd love to see.</div></div>
-    </div>
-  </div>
-
-  <div class="wp-big-verse">
-    <div class="wp-big-verse-text">"Study to show yourself approved to God, a worker who does not need to be ashamed, rightly dividing the word of truth."</div>
-    <div class="wp-big-verse-ref">2 Timothy 2:15</div>
-  </div>
-
-  <div class="wp-how">
-    <div class="wp-section-tag">How it works</div>
-    <h2 class="wp-section-title">Start studying in seconds</h2>
-    <div class="wp-steps">
-      <div class="wp-step"><div class="wp-step-num">1</div><div><div class="wp-step-title">Choose a Book</div><div class="wp-step-desc">Select any of the 66 books from the sidebar. Filter by Old or New Testament or search by name.</div></div></div>
-      <div class="wp-step"><div class="wp-step-num">2</div><div><div class="wp-step-title">Pick a Chapter</div><div class="wp-step-desc">Click any chapter number to open it. The verses, video and quiz all load automatically.</div></div></div>
-      <div class="wp-step"><div class="wp-step-num">3</div><div><div class="wp-step-title">Read, Watch & Learn</div><div class="wp-step-desc">Read the scripture, watch the video teaching, then take the quiz to test your understanding.</div></div></div>
-      <div class="wp-step"><div class="wp-step-num">4</div><div><div class="wp-step-title">Track Your Progress</div><div class="wp-step-desc">Mark each chapter as complete and watch your overall Bible reading progress grow.</div></div></div>
+  <div class="section" id="wpFeatures">
+    <div class="section-tag">What's inside</div>
+    <h2 class="section-title">Everything you need to study the Bible</h2>
+    <p class="section-sub">From Genesis to Revelation — read, watch, learn and track your journey.</p>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">📖</div><div class="feature-title">Full Scripture Reading</div><div class="feature-desc">Read all 66 books in KJV or ASV. Verses load beautifully formatted for easy reading.</div></div>
+      <div class="feature-card"><div class="feature-icon">▶</div><div class="feature-title">Video Teachings</div><div class="feature-desc">Watch curated video teachings per chapter for deeper understanding of scripture.</div></div>
+      <div class="feature-card"><div class="feature-icon">✍</div><div class="feature-title">Strict Quizzes</div><div class="feature-desc">10 questions per chapter. Score 80% to pass. No answers revealed — study to succeed!</div></div>
+      <div class="feature-card"><div class="feature-icon">🔒</div><div class="feature-title">Chapter Locking</div><div class="feature-desc">Chapters unlock only after passing the previous quiz — ensuring genuine learning.</div></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Progress Tracking</div><div class="feature-desc">Track every chapter read, quiz passed, score and attempt. See your full study stats.</div></div>
+      <div class="feature-card"><div class="feature-icon">🌟</div><div class="feature-title">Safe Space</div><div class="feature-desc">Share feature ideas and connect with the Bible study community.</div></div>
     </div>
   </div>
 
-  <div class="wp-cta">
-    <h2 class="wp-cta-title">Ready to begin<br>your journey?</h2>
-    <p class="wp-cta-sub">Deepen your faith through daily Bible study. Completely free, always.</p>
-    <button class="wp-btn-primary" onclick="enterApp()">📖 Open Scripture Study</button>
+  <div class="verse-section">
+    <div class="big-verse">"Study to show yourself approved to God, a worker who does not need to be ashamed, rightly dividing the word of truth."</div>
+    <div class="verse-ref">2 Timothy 2:15</div>
   </div>
 
-  <div class="wp-footer">
-    <div class="wp-footer-brand">Scripture Study</div>
-    <div>By Gabriel Mubanga — Built with faith and purpose</div>
-    <div class="wp-footer-copy">© 2026 Gabriel Mubanga. All rights reserved.</div>
-  </div>
-
-</div>
-<!-- END WELCOME PAGE -->
-
-<!-- ═══════════════════════════
-     MAIN APP (hidden until Enter)
-═══════════════════════════ -->
-<div id="appPage" style="display:none;">
-
-<!-- HEADER -->
-<header>
-  <div class="header-brand">
-    <div class="header-icon">✝</div>
-    <div>
-      <div class="header-title">Scripture Study</div>
-      <div class="header-subtitle">by Gabriel Mubanga</div>
+  <div class="section">
+    <div class="section-tag">How it works</div>
+    <h2 class="section-title">Start studying in 4 steps</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div><div class="step-title">Choose a Book</div><div class="step-desc">Select any of the 66 books from the sidebar. Filter by Old or New Testament.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div><div class="step-title">Pick a Chapter</div><div class="step-desc">Click a chapter — scripture, video and quiz all load automatically.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div><div class="step-title">Read, Watch & Quiz</div><div class="step-desc">Read the scripture, watch the teaching, then take the 10-question quiz.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div><div class="step-title">Score 80% to Unlock Next</div><div class="step-desc">Pass each chapter quiz to unlock the next. Track your progress across the whole Bible.</div></div></div>
     </div>
   </div>
-  <div class="progress-bar-wrap">
-    <div class="progress-label">
-      <span>Reading Progress</span>
-      <span id="progressCount">0 chapters</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
-    </div>
+
+  <div class="cta-section">
+    <h2 class="cta-title">Ready to begin<br>your journey?</h2>
+    <p class="cta-sub">Deepen your faith through daily Bible study. Completely free, always.</p>
+    <button class="btn-gold" onclick="enterApp()">📖 Open Scripture Study</button>
   </div>
-  <button class="safe-space-nav-btn" onclick="toggleSafeSpace()">🌟 Safe Space</button>
-</header>
 
-<!-- LAYOUT -->
-<div class="app-layout">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Search Books</div>
-      <input class="search-box" id="searchBooks" type="text" placeholder="Type a book name…" oninput="searchBooks()" />
-    </div>
-    <div class="testament-tabs">
-      <button class="tab-btn active" onclick="filterTestament('all', this)">All</button>
-      <button class="tab-btn" onclick="filterTestament('old', this)">Old</button>
-      <button class="tab-btn" onclick="filterTestament('new', this)">New</button>
-    </div>
-    <div class="books-list" id="books"></div>
-  </aside>
-
-  <!-- MAIN PANEL -->
-  <main class="main-panel">
-
-    <!-- Welcome screen -->
-    <div class="welcome-screen" id="welcomeScreen">
-      <div class="welcome-icon">📖</div>
-      <div class="welcome-title">Begin your study</div>
-      <div class="welcome-sub">Select a book from the left to browse chapters, watch video teachings, and test your knowledge with quizzes.</div>
-      <div class="welcome-hint" id="loadingHint">⏳ Loading study materials…</div>
-    </div>
-
-    <!-- Chapter view -->
-    <div class="chapter-view" id="chapterView">
-
-      <div class="chapter-header">
-        <div class="chapter-breadcrumb" id="chapterBreadcrumb">Genesis</div>
-        <div class="chapter-title-row">
-          <div class="chapter-title-main" id="chapterTitleMain">Chapter 1</div>
-          <div class="chapter-nav">
-            <button class="nav-btn" id="prevBtn" onclick="navigateChapter(-1)">← Prev</button>
-            <button class="nav-btn" id="nextBtn" onclick="navigateChapter(1)">Next →</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="chapters-section">
-        <div class="section-label">Chapters in <span id="bookNameLabel"></span></div>
-        <div class="chapters-grid" id="chapters"></div>
-      </div>
-
-      <div class="chapter-content">
-
-        <!-- Bible Text card -->
-        <div class="bible-text-card">
-          <div class="card-header">
-            <div class="card-icon" style="background:rgba(184,134,11,0.12);">✦</div>
-            <div class="card-title">Scripture Reading</div>
-            <select class="translation-select" id="translationSelect" onchange="reloadVerses()">
-              <option value="de4e12af7f28f599-02">KJV</option>
-              <option value="55212e3cf5d04d49-01">ASV</option>
-            </select>
-          </div>
-          <div class="verses-container" id="versesContainer">
-            <div class="verses-loading">Select a chapter to read the verses.</div>
-          </div>
-        </div>
-
-        <!-- Video card -->
-        <div class="content-card">
-          <div class="card-header">
-            <div class="card-icon video-icon">▶</div>
-            <div class="card-title">Video Teaching</div>
-          </div>
-          <div class="video-wrapper">
-            <div id="videoSection"><div class="no-content">No video available for this chapter.</div></div>
-          </div>
-        </div>
-
-        <!-- Quiz card -->
-        <div class="content-card">
-          <div class="card-header">
-            <div class="card-icon quiz-icon">?</div>
-            <div class="card-title">Knowledge Check</div>
-          </div>
-          <div class="quiz-wrapper">
-            <div class="quiz-question" id="quizQuestion">Select a chapter to begin the quiz.</div>
-            <div class="quiz-options" id="quizOptions"></div>
-            <div class="quiz-result" id="quizResult"></div>
-            <button class="quiz-retry-btn" id="retryBtn" onclick="retryQuiz()">↺ Try again</button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Mark complete -->
-      <div class="mark-complete-section">
-        <button class="mark-complete-btn" id="markCompleteBtn" onclick="toggleComplete()">
-          <span id="markCompleteIcon">○</span>
-          <span id="markCompleteText">Mark chapter as complete</span>
-        </button>
-      </div>
-
-    </div>
-
-  </main>
+  <div class="lp-footer">
+    <div class="lp-footer-brand">Scripture Study</div>
+    <div style="font-size:0.82rem;color:var(--text-3);font-weight:500;">By Gabriel Mubanga — Built with faith and purpose</div>
+    <div class="lp-footer-copy">© 2026 Gabriel Mubanga. All rights reserved.</div>
+  </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     APP
+══════════════════════════════════════ -->
+<div id="appPage">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="app-brand">
+      <div class="app-brand-icon">✝</div>
+      <div>
+        <div class="app-brand-name">Scripture Study</div>
+        <div class="app-brand-sub">by Gabriel Mubanga</div>
+      </div>
+    </div>
+    <div class="header-progress">
+      <div class="header-progress-label">
+        <span>Progress</span>
+        <span id="progressCount">0 chapters</span>
+      </div>
+      <div class="header-progress-track">
+        <div class="header-progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+    <button class="ss-trigger-btn" onclick="toggleSS()">🌟 Safe Space</button>
+  </header>
+
+  <!-- Layout -->
+  <div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <input class="sidebar-search" id="searchBooks" type="text" placeholder="Search books…" oninput="renderBooks()"/>
+      </div>
+      <div class="testament-tabs">
+        <button class="t-tab active" onclick="filterT('all',this)">All</button>
+        <button class="t-tab" onclick="filterT('old',this)">Old</button>
+        <button class="t-tab" onclick="filterT('new',this)">New</button>
+      </div>
+      <div class="books-list" id="booksList"></div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-panel" id="mainPanel">
+
+      <!-- Welcome -->
+      <div class="welcome-screen" id="appWelcome">
+        <div class="welcome-icon">📖</div>
+        <div class="welcome-title">Begin your study</div>
+        <div class="welcome-sub">Choose a book from the sidebar to start reading, watching and quizzing.</div>
+        <div class="welcome-hint" id="loadHint">⏳ Loading study materials…</div>
+      </div>
+
+      <!-- Chapter view -->
+      <div class="chapter-view" id="chapterView">
+
+        <div class="chapter-header">
+          <div class="chapter-crumb" id="chCrumb">Genesis</div>
+          <div class="chapter-title-row">
+            <div class="chapter-title" id="chTitle">Chapter 1</div>
+            <div class="chapter-nav">
+              <button class="nav-btn" id="prevBtn" onclick="navChapter(-1)">← Prev</button>
+              <button class="nav-btn" id="nextBtn" onclick="navChapter(1)">Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chapters-section">
+          <div class="section-label">Chapters — <span id="bookLabel"></span></div>
+          <div class="chapters-grid" id="chaptersGrid"></div>
+        </div>
+
+        <div class="chapter-content">
+
+          <!-- Scripture -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon">✦</div>
+              <div class="card-title">Scripture Reading</div>
+              <select class="translation-select" id="translationSelect" onchange="reloadVerses()">
+                <option value="de4e12af7f28f599-02">KJV</option>
+                <option value="55212e3cf5d04d49-01">ASV</option>
+              </select>
+            </div>
+            <div class="verses-wrap" id="versesWrap">
+              <div class="verses-msg">Select a chapter to read verses.</div>
+            </div>
+          </div>
+
+          <!-- Video -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon">▶</div>
+              <div class="card-title">Video Teaching</div>
+            </div>
+            <div class="card-body">
+              <div id="videoSection"><div class="verses-msg">No video for this chapter.</div></div>
+            </div>
+          </div>
+
+          <!-- Quiz -->
+          <div class="card" id="quizCard">
+            <div class="card-header">
+              <div class="card-icon">✍</div>
+              <div class="card-title">Knowledge Check</div>
+              <div class="pass-badge" id="passBadge">✓ Passed</div>
+            </div>
+            <div class="quiz-body">
+              <div class="quiz-progress-track"><div class="quiz-progress-fill" id="qProgress" style="width:0%"></div></div>
+              <div class="quiz-meta" id="qMeta"></div>
+              <div class="quiz-q" id="qQuestion">Select a chapter to begin.</div>
+              <div class="quiz-opts" id="qOpts"></div>
+              <div class="quiz-feedback" id="qFeedback"></div>
+              <div class="score-card" id="scoreCard"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-panel" id="statsPanel">
+          <div class="stats-panel-title">📊 Your Study Stats</div>
+          <div class="pills" id="pillsWrap">
+            <div class="pill">Loading…</div>
+          </div>
+        </div>
+
+        <!-- Complete -->
+        <div class="complete-section">
+          <button class="complete-btn" id="completeBtn" onclick="markComplete()">
+            <span id="completeBtnIcon">○</span>
+            <span id="completeBtnText">Mark chapter as complete</span>
+          </button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <footer class="app-footer">© 2026 Gabriel Mubanga. All rights reserved.</footer>
 </div>
-<!-- END APP PAGE -->
 
-<!-- SAFE SPACE OVERLAY -->
-<div class="safe-space-overlay" id="safeSpaceOverlay" onclick="closeSafeSpaceOutside(event)">
-  <div class="safe-space-panel" id="safeSpacePanel">
-
-    <!-- Header -->
-    <div class="ss-header">
-      <div class="ss-header-left">
-        <div class="ss-title">🌟 Safe Space</div>
-        <div class="ss-subtitle">Coming soon — share what features you'd love to see</div>
+<!-- Safe Space -->
+<div class="ss-overlay" id="ssOverlay" onclick="closeSSOuter(event)">
+  <div class="ss-panel">
+    <div class="ss-head">
+      <div>
+        <div class="ss-head-title">🌟 Safe Space</div>
+        <div class="ss-head-sub">Coming Soon — share your feature ideas</div>
       </div>
-      <button class="ss-close" onclick="toggleSafeSpace()">✕</button>
+      <button class="ss-close" onclick="toggleSS()">✕</button>
     </div>
-
-    <!-- Banner -->
-    <div class="ss-verse-banner">
-      <strong>✦ Coming Soon</strong>
-      <span>This space will be a place of motivation, encouragement and community. For now — tell us what features you would love to see here!</span>
+    <div class="ss-banner">
+      <b>✦ Coming Soon</b>
+      This space will be a motivational community. For now — tell us what features you'd love to see!
     </div>
-
-    <!-- Comments list -->
-    <div class="ss-messages" id="ssMessages">
-      <div class="ss-empty" id="ssEmpty">
-        💬 No suggestions yet. Be the first to share your idea!
-      </div>
+    <div class="ss-msgs" id="ssMsgs">
+      <div class="ss-empty" id="ssEmpty">💬 No suggestions yet. Be the first!</div>
     </div>
-
-    <!-- Compose -->
     <div class="ss-compose">
-      <textarea id="ssInput" placeholder="e.g. I would love a prayer wall, or a daily verse feature, or a way to share progress…" maxlength="500"></textarea>
+      <textarea id="ssInput" placeholder="e.g. I'd love a prayer wall, daily verse notifications…" maxlength="500"></textarea>
       <div class="ss-compose-footer">
-        <span class="ss-anon-note">🔒 Posted anonymously — no account needed</span>
-        <button class="ss-send-btn" onclick="sendSafeSpaceMsg()">Submit ✦</button>
+        <span class="ss-anon">🔒 Anonymous — no account needed</span>
+        <button class="ss-send" onclick="submitSS()">Submit ✦</button>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- Footer -->
-<footer style="text-align:center; padding: 1.2rem; font-family:'Lora',serif; font-size:0.78rem; color:var(--ink-faint); border-top:1px solid var(--border); background:var(--parchment);">
-  © 2026 Gabriel Mubanga. All rights reserved.
-</footer>
+<!-- Install banner -->
+<div class="install-banner" id="installBanner">
+  <div style="font-size:1.5rem;flex-shrink:0;">📖</div>
+  <div class="install-text">
+    <b>Install Scripture Study</b>
+    Add to home screen — works offline too!
+  </div>
+  <button class="install-btn" onclick="installApp()">Install</button>
+  <button class="install-dismiss" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
+</div>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// =============================
-// DATA
-// =============================
-const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZrQs6zU6I5mFjdeYntSSfTZKd3G6Qz6pyP2iUD1K-Oat5SyZkK0vLtueHPDvsbKmk8Snl4x_TX3wB/pub?output=csv";
+// ══════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════
+const SHEET_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZrQs6zU6I5mFjdeYntSSfTZKd3G6Qz6pyP2iUD1K-Oat5SyZkK0vLtueHPDvsbKmk8Snl4x_TX3wB/pub?output=csv";
+const PASS_MARK  = 0.80;   // 80%
+const MAX_Q      = 10;     // max questions per chapter
 
-let chapterQuizzes = {};
-let chapterVideos = {};
-let completedChapters = new Set(JSON.parse(localStorage.getItem('completedChapters') || '[]'));
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let quizDB     = {};   // key → [{question,options,answer}]
+let videoDB    = {};   // key → url
+let completed  = new Set(JSON.parse(localStorage.getItem('v2_completed') || '[]'));
+let readerStats= JSON.parse(localStorage.getItem('v2_stats') || '{}');
+let testament  = 'all';
+let curBook    = null;
+let curChapter = null;
 
-let currentBook = null;
-let currentChapter = null;
-let currentTestament = 'all';
-let currentQuiz = null;
+// Quiz state
+let qList = [], qIdx = 0, qScore = 0, qAnswers = [], qAnswered = false;
 
-const OT_BOOKS = new Set([
-  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth",
-  "1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra",
-  "Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon",
-  "Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos",
-  "Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi"
-]);
+// ── BOOKS ──
+const OT = new Set(["Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth","1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi"]);
 
-const bookChapters = {
-  "Genesis":50,"Exodus":40,"Leviticus":27,"Numbers":36,"Deuteronomy":34,
-  "Joshua":24,"Judges":21,"Ruth":4,"1 Samuel":31,"2 Samuel":24,
-  "1 Kings":22,"2 Kings":25,"1 Chronicles":29,"2 Chronicles":36,
-  "Ezra":10,"Nehemiah":13,"Esther":10,"Job":42,"Psalms":150,
-  "Proverbs":31,"Ecclesiastes":12,"Song of Solomon":8,"Isaiah":66,
-  "Jeremiah":52,"Lamentations":5,"Ezekiel":48,"Daniel":12,
-  "Hosea":14,"Joel":3,"Amos":9,"Obadiah":1,"Jonah":4,
-  "Micah":7,"Nahum":3,"Habakkuk":3,"Zephaniah":3,
-  "Haggai":2,"Zechariah":14,"Malachi":4,
-  "Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,
-  "Romans":16,"1 Corinthians":16,"2 Corinthians":13,
-  "Galatians":6,"Ephesians":6,"Philippians":4,"Colossians":4,
-  "1 Thessalonians":5,"2 Thessalonians":3,
-  "1 Timothy":6,"2 Timothy":4,"Titus":3,"Philemon":1,
-  "Hebrews":13,"James":5,"1 Peter":5,"2 Peter":3,
-  "1 John":5,"2 John":1,"3 John":1,"Jude":1,"Revelation":22
-};
+const BOOKS = {"Genesis":50,"Exodus":40,"Leviticus":27,"Numbers":36,"Deuteronomy":34,"Joshua":24,"Judges":21,"Ruth":4,"1 Samuel":31,"2 Samuel":24,"1 Kings":22,"2 Kings":25,"1 Chronicles":29,"2 Chronicles":36,"Ezra":10,"Nehemiah":13,"Esther":10,"Job":42,"Psalms":150,"Proverbs":31,"Ecclesiastes":12,"Song of Solomon":8,"Isaiah":66,"Jeremiah":52,"Lamentations":5,"Ezekiel":48,"Daniel":12,"Hosea":14,"Joel":3,"Amos":9,"Obadiah":1,"Jonah":4,"Micah":7,"Nahum":3,"Habakkuk":3,"Zephaniah":3,"Haggai":2,"Zechariah":14,"Malachi":4,"Matthew":28,"Mark":16,"Luke":24,"John":21,"Acts":28,"Romans":16,"1 Corinthians":16,"2 Corinthians":13,"Galatians":6,"Ephesians":6,"Philippians":4,"Colossians":4,"1 Thessalonians":5,"2 Thessalonians":3,"1 Timothy":6,"2 Timothy":4,"Titus":3,"Philemon":1,"Hebrews":13,"James":5,"1 Peter":5,"2 Peter":3,"1 John":5,"2 John":1,"3 John":1,"Jude":1,"Revelation":22};
 
-const books = Object.keys(bookChapters);
-const TOTAL_CHAPTERS = Object.values(bookChapters).reduce((a, b) => a + b, 0);
+const BOOK_IDS = {"Genesis":"GEN","Exodus":"EXO","Leviticus":"LEV","Numbers":"NUM","Deuteronomy":"DEU","Joshua":"JOS","Judges":"JDG","Ruth":"RUT","1 Samuel":"1SA","2 Samuel":"2SA","1 Kings":"1KI","2 Kings":"2KI","1 Chronicles":"1CH","2 Chronicles":"2CH","Ezra":"EZR","Nehemiah":"NEH","Esther":"EST","Job":"JOB","Psalms":"PSA","Proverbs":"PRO","Ecclesiastes":"ECC","Song of Solomon":"SNG","Isaiah":"ISA","Jeremiah":"JER","Lamentations":"LAM","Ezekiel":"EZK","Daniel":"DAN","Hosea":"HOS","Joel":"JOL","Amos":"AMO","Obadiah":"OBA","Jonah":"JON","Micah":"MIC","Nahum":"NAM","Habakkuk":"HAB","Zephaniah":"ZEP","Haggai":"HAG","Zechariah":"ZEC","Malachi":"MAL","Matthew":"MAT","Mark":"MRK","Luke":"LUK","John":"JHN","Acts":"ACT","Romans":"ROM","1 Corinthians":"1CO","2 Corinthians":"2CO","Galatians":"GAL","Ephesians":"EPH","Philippians":"PHP","Colossians":"COL","1 Thessalonians":"1TH","2 Thessalonians":"2TH","1 Timothy":"1TI","2 Timothy":"2TI","Titus":"TIT","Philemon":"PHM","Hebrews":"HEB","James":"JAS","1 Peter":"1PE","2 Peter":"2PE","1 John":"1JN","2 John":"2JN","3 John":"3JN","Jude":"JUD","Revelation":"REV"};
 
-// =============================
-// BIBLE API — VERSES
-// =============================
-const API_KEY = "3e5b3c1c1b3b1b1b1b1b1b1b1b1b1b1b"; // public demo key
+const TOTAL_CH = Object.values(BOOKS).reduce((a,b)=>a+b,0);
 
-// Map app book names → Bible API book IDs
-const bookIdMap = {
-  "Genesis":"GEN","Exodus":"EXO","Leviticus":"LEV","Numbers":"NUM","Deuteronomy":"DEU",
-  "Joshua":"JOS","Judges":"JDG","Ruth":"RUT","1 Samuel":"1SA","2 Samuel":"2SA",
-  "1 Kings":"1KI","2 Kings":"2KI","1 Chronicles":"1CH","2 Chronicles":"2CH",
-  "Ezra":"EZR","Nehemiah":"NEH","Esther":"EST","Job":"JOB","Psalms":"PSA",
-  "Proverbs":"PRO","Ecclesiastes":"ECC","Song of Solomon":"SNG","Isaiah":"ISA",
-  "Jeremiah":"JER","Lamentations":"LAM","Ezekiel":"EZK","Daniel":"DAN",
-  "Hosea":"HOS","Joel":"JOL","Amos":"AMO","Obadiah":"OBA","Jonah":"JON",
-  "Micah":"MIC","Nahum":"NAM","Habakkuk":"HAB","Zephaniah":"ZEP",
-  "Haggai":"HAG","Zechariah":"ZEC","Malachi":"MAL",
-  "Matthew":"MAT","Mark":"MRK","Luke":"LUK","John":"JHN","Acts":"ACT",
-  "Romans":"ROM","1 Corinthians":"1CO","2 Corinthians":"2CO",
-  "Galatians":"GAL","Ephesians":"EPH","Philippians":"PHP","Colossians":"COL",
-  "1 Thessalonians":"1TH","2 Thessalonians":"2TH",
-  "1 Timothy":"1TI","2 Timothy":"2TI","Titus":"TIT","Philemon":"PHM",
-  "Hebrews":"HEB","James":"JAS","1 Peter":"1PE","2 Peter":"2PE",
-  "1 John":"1JN","2 John":"2JN","3 John":"3JN","Jude":"JUD","Revelation":"REV"
-};
-
-async function loadVerses(book, chapter) {
-  const container = document.getElementById('versesContainer');
-  container.innerHTML = '<div class="verses-loading">Loading verses…</div>';
-
-  const bookId = bookIdMap[book];
-  if (!bookId) {
-    container.innerHTML = '<div class="verses-error">Book not found in database.</div>';
-    return;
-  }
-
-  const bibleId = document.getElementById('translationSelect').value;
-  const chapterId = bookId + "." + chapter;
-  const url = `https://api.scripture.api.bible/v1/bibles/${bibleId}/chapters/${chapterId}/verses`;
-
-  try {
-    const res = await fetch(url, {
-      headers: { "api-key": "3e5b3c7c5ddd0a5e5b1b5b5b5b5b5b5b" }
-    });
-
-    if (!res.ok) throw new Error("API error: " + res.status);
-    const data = await res.json();
-    const verses = data.data;
-
-    if (!verses || verses.length === 0) {
-      container.innerHTML = '<div class="verses-error">No verses found for this chapter.</div>';
-      return;
-    }
-
-    // Fetch each verse text
-    container.innerHTML = '<div class="verses-loading">Fetching text…</div>';
-    const verseTexts = await Promise.all(
-      verses.map(v =>
-        fetch(`https://api.scripture.api.bible/v1/bibles/${bibleId}/verses/${v.id}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`, {
-          headers: { "api-key": "3e5b3c7c5ddd0a5e5b1b5b5b5b5b5b5b" }
-        }).then(r => r.json()).catch(() => null)
-      )
-    );
-
-    container.innerHTML = '';
-    verseTexts.forEach((vd, i) => {
-      if (!vd || !vd.data) return;
-      const text = vd.data.content?.replace(/\n/g, ' ').trim();
-      if (!text) return;
-      const div = document.createElement('div');
-      div.className = 'verse';
-      div.style.animationDelay = (i * 0.02) + 's';
-      div.innerHTML = `<span class="verse-num">${i + 1}</span><span class="verse-text">${text}</span>`;
-      container.appendChild(div);
-    });
-
-    if (!container.children.length) {
-      container.innerHTML = '<div class="verses-error">Could not load verse text.</div>';
-    }
-
-  } catch (err) {
-    // Fallback: use free bible-api.com (no key needed)
-    try {
-      const fallbackBook = book.toLowerCase().replace(/ /g, '+');
-      const r = await fetch(`https://bible-api.com/${fallbackBook}+${chapter}?translation=kjv`);
-      if (!r.ok) throw new Error();
-      const d = await r.json();
-      container.innerHTML = '';
-      d.verses.forEach((v, i) => {
-        const div = document.createElement('div');
-        div.className = 'verse';
-        div.style.animationDelay = (i * 0.02) + 's';
-        div.innerHTML = `<span class="verse-num">${v.verse}</span><span class="verse-text">${v.text.trim()}</span>`;
-        container.appendChild(div);
-      });
-    } catch {
-      container.innerHTML = `<div class="verses-error">Could not load verses. Please check your internet connection.</div>`;
-    }
-  }
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+function init() {
+  loadSheet();
+  renderBooks();
+  updateProgress();
+  updateStats();
+  trackReader();
 }
 
-function reloadVerses() {
-  if (currentBook && currentChapter) loadVerses(currentBook, currentChapter);
+// ══════════════════════════════════════
+// WELCOME → APP
+// ══════════════════════════════════════
+function enterApp() {
+  const wp = document.getElementById('welcomePage');
+  const ap = document.getElementById('appPage');
+  wp.style.transition = 'opacity 0.4s ease';
+  wp.style.opacity = '0';
+  setTimeout(() => {
+    wp.classList.add('hidden');
+    ap.classList.add('visible');
+    ap.style.opacity = '0';
+    ap.style.transition = 'opacity 0.4s ease';
+    setTimeout(() => ap.style.opacity = '1', 20);
+  }, 400);
 }
 
-// =============================
+// ══════════════════════════════════════
 // LOAD SHEET
-// =============================
+// ══════════════════════════════════════
 function loadSheet() {
-  Papa.parse(sheetURL, {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results) {
-      results.data.forEach(row => {
-        const book = row.Book?.trim();
-        const chapter = row.Chapter?.trim();
-        if (!book || !chapter) return;
-        const key = book + "_" + chapter;
-        const opts = [
-          row["Option 1"]?.trim(),
-          row["Option 2"]?.trim(),
-          row["Option 3"]?.trim()
-        ].filter(Boolean);
-        if (row.Question?.trim()) {
-          chapterQuizzes[key] = {
-            question: row.Question.trim(),
-            options: opts,
-            answer: row.Answer?.trim()
-          };
+  Papa.parse(SHEET_URL, {
+    download: true, header: true, skipEmptyLines: true,
+    complete(res) {
+      res.data.forEach(row => {
+        const book = row.Book?.trim(), ch = row.Chapter?.trim();
+        if (!book || !ch) return;
+        const key = book + '_' + ch;
+        const opts = [row['Option 1'],row['Option 2'],row['Option 3']].map(o=>o?.trim()).filter(Boolean);
+        if (row.Question?.trim() && opts.length >= 2 && row.Answer?.trim()) {
+          if (!quizDB[key]) quizDB[key] = [];
+          quizDB[key].push({ question:row.Question.trim(), options:opts, answer:row.Answer.trim() });
         }
-        const vid = row["Video URL"]?.trim();
-        if (vid) chapterVideos[key] = vid;
+        const vid = row['Video URL']?.trim();
+        if (vid) videoDB[key] = vid;
       });
-      const count = Object.keys(chapterQuizzes).length;
-      const headers = results.data.length > 0 ? Object.keys(results.data[0]) : [];
-      const firstRow = results.data[0] ? JSON.stringify(results.data[0], null, 2) : 'No rows found';
-      const debugBox = document.getElementById('debugBox');
-      if (debugBox) {
-        debugBox.style.display = 'block';
-        debugBox.innerHTML = '<strong>Sheet Debug Info:</strong><br>'
-          + '📋 Columns found: ' + (headers.length ? headers.join(', ') : 'NONE') + '<br>'
-          + '📖 Total rows: ' + results.data.length + '<br>'
-          + '✅ Quizzes loaded: ' + count + '<br>'
-          + '🔑 Quiz keys: ' + (count > 0 ? Object.keys(chapterQuizzes).join(', ') : 'NONE') + '<br><br>'
-          + '<strong>First row raw data:</strong><br><pre style="font-size:0.75rem;overflow:auto;max-height:120px">' + firstRow + '</pre>';
-      }
-      console.log('📋 Headers:', results.data.length > 0 ? Object.keys(results.data[0]) : 'NO ROWS');
-      console.log('📖 First row:', JSON.stringify(results.data[0]));
-      console.log('✅ Quizzes loaded:', count, Object.keys(chapterQuizzes));
-      document.getElementById('loadingHint').textContent = count > 0
-        ? '✓ ' + count + ' quizzes loaded — select a book to begin'
-        : '⚠ Sheet connected but no quizzes found — check your column names in the sheet';
-      updateProgressBar();
+      const n = Object.keys(quizDB).length;
+      document.getElementById('loadHint').textContent =
+        n > 0 ? `✓ ${n} chapters have quizzes — select a book to begin` : '⚠ No quizzes found — check your Google Sheet column names';
+      updateProgress();
     },
-    error: function() {
-      document.getElementById('loadingHint').textContent = '⚠ Could not load study materials. Please check your connection.';
+    error() {
+      document.getElementById('loadHint').textContent = '⚠ Could not load materials — check your connection.';
     }
   });
 }
 
-loadSheet();
-
-// =============================
-// PROGRESS
-// =============================
-function updateProgressBar() {
-  const count = completedChapters.size;
-  const pct = Math.round((count / TOTAL_CHAPTERS) * 100 * 10) / 10;
-  document.getElementById('progressCount').textContent = count + ' chapters';
-  document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
-}
-
-function saveCompleted() {
-  localStorage.setItem('completedChapters', JSON.stringify([...completedChapters]));
-}
-
-// =============================
-// DISPLAY BOOKS
-// =============================
-function displayBooks() {
-  const container = document.getElementById("books");
-  container.innerHTML = "";
-  books.forEach(book => {
-    const isOT = OT_BOOKS.has(book);
-    if (currentTestament === 'old' && !isOT) return;
-    if (currentTestament === 'new' && isOT) return;
-
-    const query = document.getElementById('searchBooks').value.toLowerCase();
-    if (query && !book.toLowerCase().includes(query)) return;
-
-    // count completed chapters in this book
-    const total = bookChapters[book];
+// ══════════════════════════════════════
+// BOOKS
+// ══════════════════════════════════════
+function renderBooks() {
+  const list = document.getElementById('booksList');
+  const q = document.getElementById('searchBooks').value.toLowerCase();
+  list.innerHTML = '';
+  Object.keys(BOOKS).forEach(book => {
+    if (testament === 'old' && !OT.has(book)) return;
+    if (testament === 'new' &&  OT.has(book)) return;
+    if (q && !book.toLowerCase().includes(q)) return;
+    const total = BOOKS[book];
     let done = 0;
-    for (let i = 1; i <= total; i++) {
-      if (completedChapters.has(book + '_' + i)) done++;
-    }
-
-    const btn = document.createElement("button");
-    btn.className = "book-btn" + (book === currentBook ? " active" : "") + (done > 0 ? " has-progress" : "");
-    btn.innerHTML = `
-      <span>${book}</span>
-      <div style="display:flex;align-items:center;gap:5px">
-        <span class="completed-dot"></span>
-        <span class="book-badge">${done > 0 ? done+'/'+total : total}</span>
-      </div>`;
-    btn.onclick = () => showChapters(book);
-    container.appendChild(btn);
+    for (let i=1;i<=total;i++) if (completed.has(book+'_'+i)) done++;
+    const btn = document.createElement('button');
+    btn.className = 'book-btn' + (book===curBook?' active':'') + (done>0?' has-progress':'');
+    btn.innerHTML = `<span>${book}</span><div style="display:flex;align-items:center;gap:5px"><span class="completed-dot"></span><span class="book-badge">${done>0?done+'/'+total:total}</span></div>`;
+    btn.onclick = () => openBook(book);
+    list.appendChild(btn);
   });
 }
 
-displayBooks();
-
-// =============================
-// FILTER TESTAMENT
-// =============================
-function filterTestament(type, el) {
-  currentTestament = type;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+function filterT(t, el) {
+  testament = t;
+  document.querySelectorAll('.t-tab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  displayBooks();
+  renderBooks();
 }
 
-// =============================
-// SEARCH
-// =============================
-function searchBooks() { displayBooks(); }
+// ══════════════════════════════════════
+// OPEN BOOK
+// ══════════════════════════════════════
+function openBook(book) {
+  curBook = book;
+  renderBooks();
+  document.getElementById('bookLabel').textContent = book;
+  document.getElementById('chCrumb').textContent = book;
 
-// =============================
-// SHOW CHAPTERS (select book)
-// =============================
-function showChapters(book) {
-  currentBook = book;
-  displayBooks();
-
-  document.getElementById('bookNameLabel').textContent = book;
-  document.getElementById('chapterBreadcrumb').textContent = book;
-
-  const container = document.getElementById("chapters");
-  container.innerHTML = "";
-  const total = bookChapters[book];
-  for (let i = 1; i <= total; i++) {
-    const btn = document.createElement("button");
-    const key = book + "_" + i;
-    btn.className = "chapter-num-btn" +
-      (i === currentChapter ? " active" : "") +
-      (completedChapters.has(key) ? " completed" : "");
+  // Build chapter grid
+  const grid = document.getElementById('chaptersGrid');
+  grid.innerHTML = '';
+  const total = BOOKS[book];
+  for (let i=1;i<=total;i++) {
+    const key = book+'_'+i;
+    const isDone = completed.has(key);
+    const prevKey = book+'_'+(i-1);
+    const prevDone = i===1 || !quizDB[prevKey] || completed.has(prevKey);
+    const locked = !prevDone;
+    const btn = document.createElement('button');
+    btn.className = 'ch-btn' + (isDone?' completed':'') + (locked?' locked':'') + (i===curChapter?' active':'');
     btn.textContent = i;
-    btn.onclick = () => openChapter(book, i);
-    container.appendChild(btn);
+    btn.title = locked ? `Complete chapter ${i-1} quiz to unlock` : '';
+    btn.onclick = () => {
+      if (locked) { toast('⚠ Pass chapter '+(i-1)+' quiz to unlock this chapter'); return; }
+      openChapter(book, i);
+    };
+    grid.appendChild(btn);
   }
 
   // Show chapter view
-  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('appWelcome').style.display = 'none';
   document.getElementById('chapterView').classList.add('visible');
 
-  // Open first chapter if none selected for this book
-  if (currentChapter === null || currentBook !== book) {
-    openChapter(book, 1);
-  }
+  // Open first unlocked chapter
+  openChapter(book, 1);
 }
 
-// =============================
+// ══════════════════════════════════════
 // OPEN CHAPTER
-// =============================
-function openChapter(book, chapter) {
-  currentBook = book;
-  currentChapter = chapter;
+// ══════════════════════════════════════
+function openChapter(book, ch) {
+  curBook = book; curChapter = ch;
+  const key = book+'_'+ch;
 
-  const key = book + "_" + chapter;
+  document.getElementById('chCrumb').textContent = book;
+  document.getElementById('chTitle').textContent = 'Chapter ' + ch;
 
-  document.getElementById('chapterBreadcrumb').textContent = book;
-  document.getElementById('chapterTitleMain').textContent = "Chapter " + chapter;
+  // Update grid
+  document.querySelectorAll('.ch-btn').forEach((b,i) => b.classList.toggle('active', i+1===ch));
 
-  // Update chapter grid highlights
-  document.querySelectorAll('.chapter-num-btn').forEach((btn, idx) => {
-    btn.classList.toggle('active', idx + 1 === chapter);
-  });
+  // Nav buttons
+  document.getElementById('prevBtn').disabled = ch <= 1;
+  document.getElementById('nextBtn').disabled = ch >= BOOKS[book];
 
-  // Prev / next buttons
-  document.getElementById('prevBtn').disabled = chapter <= 1;
-  document.getElementById('nextBtn').disabled = chapter >= bookChapters[book];
-
-  // VIDEO
-  const videoDiv = document.getElementById("videoSection");
-  const video = chapterVideos[key];
-  if (video) {
-    // Sanitize: only allow youtube/vimeo embeds
-    const safeVideo = video.replace(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=/, 'https://www.youtube.com/embed/')
-                           .replace(/^https?:\/\/youtu\.be\//, 'https://www.youtube.com/embed/');
-    videoDiv.innerHTML = `<iframe class="video-frame" src="${safeVideo}" allowfullscreen title="${book} Chapter ${chapter} video"></iframe>`;
+  // Video
+  const vDiv = document.getElementById('videoSection');
+  const vid = videoDB[key];
+  if (vid) {
+    const safe = vid.replace(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=/,'https://www.youtube.com/embed/')
+                    .replace(/^https?:\/\/youtu\.be\//,'https://www.youtube.com/embed/');
+    vDiv.innerHTML = `<iframe class="video-frame" src="${safe}" allowfullscreen></iframe>`;
   } else {
-    videoDiv.innerHTML = `<div class="no-content">No video available for this chapter.</div>`;
+    vDiv.innerHTML = '<div class="verses-msg">No video available for this chapter.</div>';
   }
 
-  // QUIZ
-  const quiz = chapterQuizzes[key];
-  currentQuiz = quiz || null;
-  renderQuiz(quiz);
+  // Quiz
+  startQuiz(quizDB[key] || []);
 
-  // Load Bible verses
-  loadVerses(book, chapter);
+  // Verses
+  loadVerses(book, ch);
 
-  // Mark complete button
-  updateMarkComplete(key);
+  // Complete btn + pass badge
+  updateCompleteBtn(key);
+  const stat = readerStats[key];
+  document.getElementById('passBadge').style.display = (stat && stat.passed) ? 'block' : 'none';
 }
 
-// =============================
-// RENDER QUIZ
-// =============================
-function renderQuiz(quiz) {
-  const qText = document.getElementById("quizQuestion");
-  const qOptions = document.getElementById("quizOptions");
-  const qResult = document.getElementById("quizResult");
-  const retryBtn = document.getElementById("retryBtn");
+// ══════════════════════════════════════
+// VERSES (bible-api.com fallback)
+// ══════════════════════════════════════
+async function loadVerses(book, ch) {
+  const wrap = document.getElementById('versesWrap');
+  wrap.innerHTML = '<div class="verses-msg">Loading verses…</div>';
+  try {
+    const bibleId = document.getElementById('translationSelect').value;
+    const bookId  = BOOK_IDS[book];
+    const chId    = bookId + '.' + ch;
+    const url     = `https://api.scripture.api.bible/v1/bibles/${bibleId}/chapters/${chId}/verses`;
+    const res     = await fetch(url, { headers:{'api-key':'3e5b3c7c5ddd0a5e5b1b5b5b5b5b5b5b'} });
+    if (!res.ok) throw new Error();
+    const data    = (await res.json()).data;
+    const texts   = await Promise.all(data.map(v =>
+      fetch(`https://api.scripture.api.bible/v1/bibles/${bibleId}/verses/${v.id}?content-type=text&include-notes=false&include-titles=false&include-chapter-numbers=false&include-verse-numbers=false`,
+        {headers:{'api-key':'3e5b3c7c5ddd0a5e5b1b5b5b5b5b5b5b'}})
+      .then(r=>r.json()).catch(()=>null)
+    ));
+    wrap.innerHTML = '';
+    texts.forEach((vd,i) => {
+      if (!vd?.data) return;
+      const t = vd.data.content?.replace(/\n/g,' ').trim();
+      if (!t) return;
+      const d = document.createElement('div');
+      d.className = 'verse';
+      d.style.animationDelay = (i*0.018)+'s';
+      d.innerHTML = `<span class="v-num">${i+1}</span><span class="v-text">${t}</span>`;
+      wrap.appendChild(d);
+    });
+    if (!wrap.children.length) throw new Error();
+  } catch {
+    try {
+      const fb = await fetch(`https://bible-api.com/${encodeURIComponent(book)}+${ch}?translation=kjv`);
+      if (!fb.ok) throw new Error();
+      const d = await fb.json();
+      wrap.innerHTML = '';
+      d.verses.forEach((v,i) => {
+        const el = document.createElement('div');
+        el.className = 'verse';
+        el.style.animationDelay = (i*0.018)+'s';
+        el.innerHTML = `<span class="v-num">${v.verse}</span><span class="v-text">${v.text.trim()}</span>`;
+        wrap.appendChild(el);
+      });
+    } catch {
+      wrap.innerHTML = '<div class="verses-msg">Could not load verses. Check your connection.</div>';
+    }
+  }
+}
 
-  qOptions.innerHTML = "";
-  qResult.className = "quiz-result";
-  qResult.textContent = "";
-  retryBtn.style.display = "none";
+function reloadVerses() { if (curBook && curChapter) loadVerses(curBook, curChapter); }
 
-  if (!quiz || !quiz.question) {
-    qText.textContent = "No quiz available for this chapter yet.";
+// ══════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════
+function startQuiz(questions) {
+  const key = curBook + '_' + curChapter;
+  document.getElementById('scoreCard').style.display = 'none';
+  document.getElementById('qFeedback').className = 'quiz-feedback';
+  document.getElementById('qProgress').style.width = '0%';
+
+  if (!questions.length) {
+    document.getElementById('qQuestion').textContent = 'No quiz available for this chapter yet.';
+    document.getElementById('qOpts').innerHTML = '';
+    document.getElementById('qMeta').innerHTML = '';
     return;
   }
 
-  qText.textContent = quiz.question;
+  qList     = [...questions].sort(()=>Math.random()-0.5).slice(0, MAX_Q);
+  qIdx      = 0;
+  qScore    = 0;
+  qAnswers  = [];
+  qAnswered = false;
+  renderQ();
+}
 
-  // Shuffle options for variety
-  const shuffled = [...quiz.options].sort(() => Math.random() - 0.5);
+function renderQ() {
+  if (qIdx >= qList.length) { showResults(); return; }
+  const q = qList[qIdx];
+  qAnswered = false;
 
-  shuffled.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.className = "quiz-opt-btn";
-    btn.textContent = opt;
-    btn.onclick = () => answerQuiz(opt, quiz, shuffled);
-    qOptions.appendChild(btn);
+  document.getElementById('qProgress').style.width = Math.round((qIdx/qList.length)*100)+'%';
+  document.getElementById('qMeta').innerHTML =
+    `<span>Question ${qIdx+1} of ${qList.length}</span><span>Score: <b>${qScore}/${qIdx}</b></span>`;
+  document.getElementById('qQuestion').textContent = q.question;
+  document.getElementById('qFeedback').className = 'quiz-feedback';
+  document.getElementById('qFeedback').textContent = '';
+
+  const opts = document.getElementById('qOpts');
+  opts.innerHTML = '';
+  [...q.options].sort(()=>Math.random()-0.5).forEach(opt => {
+    const b = document.createElement('button');
+    b.className = 'q-btn';
+    b.textContent = opt;
+    b.onclick = () => answerQ(opt, q, b);
+    opts.appendChild(b);
   });
 }
 
-function answerQuiz(selected, quiz, opts) {
-  const correct = selected === quiz.answer;
-  const allBtns = document.querySelectorAll('.quiz-opt-btn');
-  const qResult = document.getElementById("quizResult");
-  const retryBtn = document.getElementById("retryBtn");
+function answerQ(sel, q, btn) {
+  if (qAnswered) return;
+  qAnswered = true;
+  const ok = sel === q.answer;
+  const fb = document.getElementById('qFeedback');
 
-  allBtns.forEach(btn => {
-    btn.disabled = true;
-    if (btn.textContent === quiz.answer) btn.classList.add('correct');
-    else if (btn.textContent === selected && !correct) btn.classList.add('wrong');
-  });
+  document.querySelectorAll('.q-btn').forEach(b => b.disabled = true);
+  qAnswers.push(ok);
+  if (ok) {
+    qScore++;
+    btn.classList.add('correct');
+    fb.textContent = '✓ Correct!';
+    fb.className = 'quiz-feedback correct-fb';
+  } else {
+    btn.classList.add('wrong');
+    fb.textContent = '✗ Incorrect — keep going!';
+    fb.className = 'quiz-feedback wrong-fb';
+  }
 
-  qResult.textContent = correct
-    ? "✓ Correct! Well done."
-    : `✗ Not quite. The answer is: ${quiz.answer}`;
-  qResult.className = "quiz-result " + (correct ? "correct-result" : "wrong-result");
-  retryBtn.style.display = correct ? "none" : "block";
+  document.getElementById('qMeta').innerHTML =
+    `<span>Question ${qIdx+1} of ${qList.length}</span><span>Score: <b>${qScore}/${qIdx+1}</b></span>`;
+
+  setTimeout(() => { qIdx++; renderQ(); }, 1300);
 }
 
-function retryQuiz() {
-  renderQuiz(currentQuiz);
+function showResults() {
+  const total  = qList.length;
+  const pct    = Math.round((qScore/total)*100);
+  const passed = pct >= PASS_MARK * 100;
+  const key    = curBook + '_' + curChapter;
+
+  // Save stats
+  if (!readerStats[key]) readerStats[key] = { attempts:0, bestScore:0, passed:false };
+  readerStats[key].attempts++;
+  if (pct > readerStats[key].bestScore) readerStats[key].bestScore = pct;
+  if (passed) readerStats[key].passed = true;
+  readerStats[key].date = new Date().toLocaleDateString();
+  localStorage.setItem('v2_stats', JSON.stringify(readerStats));
+
+  // Clear question UI
+  document.getElementById('qQuestion').textContent = '';
+  document.getElementById('qOpts').innerHTML = '';
+  document.getElementById('qMeta').innerHTML = '';
+  document.getElementById('qFeedback').className = 'quiz-feedback';
+  document.getElementById('qProgress').style.width = '100%';
+
+  // Show pass badge
+  if (passed) document.getElementById('passBadge').style.display = 'block';
+
+  // Score card
+  const card = document.getElementById('scoreCard');
+  card.style.display = 'block';
+  card.className = 'score-card ' + (passed ? 'passed' : 'failed');
+  card.innerHTML = `
+    <div class="score-circle">
+      <span class="score-pct">${pct}%</span>
+      <span class="score-frac">${qScore}/${total}</span>
+    </div>
+    <div class="score-label">${passed ? '🎉 Chapter Passed!' : '😔 Not Passed Yet'}</div>
+    <div class="score-sub">${passed
+      ? 'Excellent! You scored '+pct+'% and may now proceed to the next chapter.'
+      : 'You scored '+pct+'%. You need at least 80% to pass. Read the chapter again carefully and retry!'
+    }</div>
+    <div class="score-dots">
+      ${qAnswers.map((a,i)=>`<span class="sdot ${a?'ok':'bad'}" title="Q${i+1}"></span>`).join('')}
+    </div>
+    <div class="score-actions">
+      ${passed
+        ? `<button class="score-btn primary" onclick="navChapter(1)">Next Chapter →</button>`
+        : `<button class="score-btn secondary" onclick="startQuiz(quizDB['${key}']||[])">↺ Retry Quiz</button>`
+      }
+    </div>`;
+
+  // Auto complete if passed
+  if (passed && !completed.has(key)) {
+    completed.add(key);
+    localStorage.setItem('v2_completed', JSON.stringify([...completed]));
+    updateCompleteBtn(key);
+    updateProgress();
+    renderBooks();
+    document.querySelectorAll('.ch-btn').forEach((b,i) => {
+      if (i+1 === curChapter) b.classList.add('completed');
+    });
+    // Unlock next chapter
+    openBook(curBook);
+    openChapter(curBook, curChapter);
+  }
+
+  updateStats();
 }
 
-// =============================
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function navChapter(dir) {
+  if (!curBook || !curChapter) return;
+  const next = curChapter + dir;
+  const total = BOOKS[curBook];
+  if (next >= 1 && next <= total) {
+    const prevKey = curBook + '_' + (next-1);
+    if (dir > 0 && next > 1 && quizDB[prevKey]?.length && !completed.has(prevKey)) {
+      toast('⚠ Pass chapter '+(next-1)+' quiz first!'); return;
+    }
+    openChapter(curBook, next);
+    const btns = document.querySelectorAll('.ch-btn');
+    if (btns[next-1]) btns[next-1].scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+
+// ══════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════
+function updateProgress() {
+  const n   = completed.size;
+  const pct = Math.min(Math.round(n/TOTAL_CH*1000)/10, 100);
+  document.getElementById('progressCount').textContent = n + ' chapters';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ══════════════════════════════════════
 // MARK COMPLETE
-// =============================
-function updateMarkComplete(key) {
-  const btn = document.getElementById('markCompleteBtn');
-  const icon = document.getElementById('markCompleteIcon');
-  const text = document.getElementById('markCompleteText');
-  if (completedChapters.has(key)) {
-    btn.className = 'mark-complete-btn completed-state';
+// ══════════════════════════════════════
+function markComplete() {
+  if (!curBook || !curChapter) return;
+  const key = curBook+'_'+curChapter;
+  if (completed.has(key)) return;
+  completed.add(key);
+  localStorage.setItem('v2_completed', JSON.stringify([...completed]));
+  updateCompleteBtn(key);
+  updateProgress();
+  renderBooks();
+  document.querySelectorAll('.ch-btn').forEach((b,i)=>{ if(i+1===curChapter) b.classList.add('completed'); });
+  toast('Chapter marked as complete ✓');
+  updateStats();
+}
+
+function updateCompleteBtn(key) {
+  const btn  = document.getElementById('completeBtn');
+  const icon = document.getElementById('completeBtnIcon');
+  const text = document.getElementById('completeBtnText');
+  if (completed.has(key)) {
+    btn.className = 'complete-btn done';
     icon.textContent = '✓';
     text.textContent = 'Chapter completed';
   } else {
-    btn.className = 'mark-complete-btn';
+    btn.className = 'complete-btn';
     icon.textContent = '○';
     text.textContent = 'Mark chapter as complete';
   }
 }
 
-function toggleComplete() {
-  if (!currentBook || !currentChapter) return;
-  const key = currentBook + "_" + currentChapter;
-  if (completedChapters.has(key)) return; // only allow marking complete, not undoing
+// ══════════════════════════════════════
+// STATS
+// ══════════════════════════════════════
+function updateStats() {
+  const keys    = Object.keys(readerStats);
+  const passed  = keys.filter(k=>readerStats[k].passed).length;
+  const attempts= keys.reduce((a,k)=>a+(readerStats[k].attempts||0),0);
+  const scores  = keys.filter(k=>readerStats[k].bestScore>0).map(k=>readerStats[k].bestScore);
+  const avg     = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const best    = scores.length ? Math.max(...scores) : 0;
+  const readers = parseInt(localStorage.getItem('totalReaders')||'24');
 
-  completedChapters.add(key);
-  saveCompleted();
-  updateMarkComplete(key);
-  updateProgressBar();
-  displayBooks();
-
-  // Update chapter grid dot
-  const chapterBtns = document.querySelectorAll('.chapter-num-btn');
-  if (chapterBtns[currentChapter - 1]) {
-    chapterBtns[currentChapter - 1].classList.add('completed');
-  }
-
-  showToast("Chapter marked as complete ✓");
+  document.getElementById('pillsWrap').innerHTML = `
+    <span class="pill green">📖 <b>${completed.size}</b> read</span>
+    <span class="pill green">✅ <b>${passed}</b> passed</span>
+    <span class="pill gold">🏆 Best: <b>${best}%</b></span>
+    <span class="pill gold">📈 Avg: <b>${avg}%</b></span>
+    <span class="pill">🔁 <b>${attempts}</b> attempts</span>
+    <span class="pill blue">👥 <b>${readers}</b> readers</span>`;
 }
 
-// =============================
-// NAVIGATE CHAPTERS
-// =============================
-function navigateChapter(dir) {
-  if (!currentBook || !currentChapter) return;
-  const next = currentChapter + dir;
-  const total = bookChapters[currentBook];
-  if (next >= 1 && next <= total) {
-    openChapter(currentBook, next);
-    // Scroll chapter grid button into view
-    const btns = document.querySelectorAll('.chapter-num-btn');
-    if (btns[next - 1]) btns[next - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+function trackReader() {
+  if (!localStorage.getItem('readerCounted')) {
+    localStorage.setItem('readerCounted','1');
+    const n = parseInt(localStorage.getItem('totalReaders')||'24')+1;
+    localStorage.setItem('totalReaders', n);
   }
+  updateStats();
 }
 
-// =============================
+// ══════════════════════════════════════
+// SAFE SPACE
+// ══════════════════════════════════════
+function toggleSS() {
+  const o = document.getElementById('ssOverlay');
+  o.classList.toggle('open');
+  if (o.classList.contains('open')) renderSS();
+}
+function closeSSOuter(e) { if (e.target===document.getElementById('ssOverlay')) toggleSS(); }
+function loadSS() { return JSON.parse(localStorage.getItem('ssSuggestions')||'[]'); }
+function saveSS(d) { localStorage.setItem('ssSuggestions', JSON.stringify(d)); }
+
+function submitSS() {
+  const inp = document.getElementById('ssInput');
+  const t   = inp.value.trim();
+  if (!t || t.length < 5) { toast('Please write a bit more!'); return; }
+  const msgs = loadSS();
+  const now  = new Date();
+  msgs.unshift({ text:t, time: now.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) });
+  saveSS(msgs);
+  inp.value = '';
+  renderSS();
+  toast('Thank you for your suggestion! 🌟');
+}
+
+function renderSS() {
+  const msgs  = loadSS();
+  const wrap  = document.getElementById('ssMsgs');
+  const empty = document.getElementById('ssEmpty');
+  wrap.querySelectorAll('.ss-msg').forEach(m=>m.remove());
+  if (!msgs.length) { empty.style.display='block'; return; }
+  empty.style.display = 'none';
+  msgs.forEach((m,i) => {
+    const d = document.createElement('div');
+    d.className = 'ss-msg';
+    d.style.animationDelay = (i*0.04)+'s';
+    d.innerHTML = `<div class="ss-msg-top"><span class="ss-msg-author">💬 Anonymous</span><span class="ss-msg-time">${m.time}</span></div><div class="ss-msg-text">${m.text}</div>`;
+    wrap.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════
 // TOAST
-// =============================
-function showToast(msg) {
+// ══════════════════════════════════════
+function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  setTimeout(()=>t.classList.remove('show'), 2800);
 }
 
-// =============================
-// SAFE SPACE — FEATURE SUGGESTIONS
-// =============================
-function loadSafeSpaceMsgs() {
-  return JSON.parse(localStorage.getItem('safeSpaceSuggestions') || '[]');
-}
-function saveSafeSpaceMsgs(msgs) {
-  localStorage.setItem('safeSpaceSuggestions', JSON.stringify(msgs));
-}
+// ══════════════════════════════════════
+// PWA
+// ══════════════════════════════════════
+let deferredPrompt = null;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 
-function toggleSafeSpace() {
-  const overlay = document.getElementById('safeSpaceOverlay');
-  const btn = document.querySelector('.safe-space-nav-btn');
-  const isOpen = overlay.classList.toggle('open');
-  btn.classList.toggle('active', isOpen);
-  if (isOpen) {
-    renderSafeSpaceMsgs();
-    setTimeout(() => document.getElementById('ssInput').focus(), 400);
-  }
-}
-
-function closeSafeSpaceOutside(e) {
-  if (e.target === document.getElementById('safeSpaceOverlay')) toggleSafeSpace();
-}
-
-function sendSafeSpaceMsg() {
-  const input = document.getElementById('ssInput');
-  const text = input.value.trim();
-  if (!text) { input.focus(); return; }
-  if (text.length < 5) { showToast('Please write a bit more!'); return; }
-
-  const msgs = loadSafeSpaceMsgs();
-  const now = new Date();
-  const timeStr = now.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
-    + ' at ' + now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
-
-  msgs.unshift({ text, time: timeStr });
-  saveSafeSpaceMsgs(msgs);
-  input.value = '';
-  renderSafeSpaceMsgs();
-  showToast('Thank you for your suggestion! 🌟');
-}
-
-function renderSafeSpaceMsgs() {
-  const msgs = loadSafeSpaceMsgs();
-  const container = document.getElementById('ssMessages');
-  const empty = document.getElementById('ssEmpty');
-
-  container.querySelectorAll('.ss-msg').forEach(m => m.remove());
-
-  if (!msgs.length) {
-    empty.style.display = 'block';
-    return;
-  }
-  empty.style.display = 'none';
-
-  msgs.forEach((msg, i) => {
-    const div = document.createElement('div');
-    div.className = 'ss-msg';
-    div.style.animationDelay = (i * 0.04) + 's';
-    div.innerHTML = `
-      <div class="ss-msg-top">
-        <span class="ss-msg-author">💬 Anonymous</span>
-        <span class="ss-msg-time">${msg.time}</span>
-      </div>
-      <div class="ss-msg-text">${msg.text}</div>`;
-    container.appendChild(div);
+if ('serviceWorker' in navigator && !isStandalone) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/Bible-Learning-Platform/sw.js', {scope:'/Bible-Learning-Platform/'})
+      .catch(()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
   });
-  container.scrollTop = 0;
 }
-// =============================
-// Init progress bar
-updateProgressBar();
 
-// =============================
-// WELCOME PAGE → APP
-// =============================
-function enterApp() {
-  const wp = document.getElementById('welcomePage');
-  const app = document.getElementById('appPage');
-  wp.style.opacity = '0';
-  wp.style.transition = 'opacity 0.5s ease';
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
   setTimeout(() => {
-    wp.style.display = 'none';
-    app.style.display = 'block';
-    app.style.opacity = '0';
-    app.style.transition = 'opacity 0.5s ease';
-    setTimeout(() => { app.style.opacity = '1'; }, 20);
-  }, 500);
+    if (!isStandalone) document.getElementById('installBanner').style.display = 'flex';
+  }, 3000);
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(c => {
+      deferredPrompt = null;
+      document.getElementById('installBanner').style.display = 'none';
+      if (c.outcome==='accepted') toast('🎉 Installing Scripture Study…');
+    });
+  } else {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    toast(ios ? 'Tap Share → Add to Home Screen' : 'Tap ⋮ menu → Add to Home Screen');
+  }
 }
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').style.display = 'none';
+  toast('✅ App installed! Find it on your home screen 🎉');
+});
+
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone) {
+  setTimeout(() => document.getElementById('installBanner').style.display='flex', 4000);
+}
+
+// ── START ──
+init();
 </script>
 </body>
 </html>
